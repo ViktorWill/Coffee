@@ -1,0 +1,9 @@
+{
+  "name": "coffee-dialer-api",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@azure/cosmos": "^4.2.0",
+    "@azure/functions": "^4.6.0"
+  }
+}
