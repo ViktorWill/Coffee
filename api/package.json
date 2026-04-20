@@ -2,8 +2,16 @@
   "name": "coffee-dialer-api",
   "version": "1.0.0",
   "type": "module",
+  "main": "dist/functions/*.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "func start"
+  },
   "dependencies": {
     "@azure/cosmos": "^4.2.0",
     "@azure/functions": "^4.6.0"
+  },
+  "devDependencies": {
+    "typescript": "~5.7.2"
   }
 }
