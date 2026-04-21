@@ -14,10 +14,19 @@ import { TastingProfileDialog } from '@/components/TastingProfileDialog'
 import { GrinderDialog } from '@/components/GrinderDialog'
 import { AuthDialog } from '@/components/AuthDialog'
 import { UserHeader } from '@/components/UserHeader'
+import { LevelBadge } from '@/components/LevelBadge'
+import { AchievementsRow } from '@/components/AchievementsRow'
+import { BeanClickBurst } from '@/components/BeanClickBurst'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Coffee, Funnel, Plus, SortAscending, Faders, ChartLineUp, Palette } from '@phosphor-icons/react'
 import { ulid } from 'ulid'
 import { toast } from 'sonner'
+import {
+  computeStats,
+  computeXp,
+  getEarnedAchievements,
+  getLevelProgress,
+} from '@/lib/gamification'
 
 type SortOption = 'newest' | 'oldest' | 'name-asc' | 'name-desc' | 'origin-asc' | 'origin-desc' | 'roast-asc' | 'roast-desc'
 
@@ -181,6 +190,65 @@ function AuthenticatedApp({
   const [editBeanDialogOpen, setEditBeanDialogOpen] = useState(false)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [beanToDelete, setBeanToDelete] = useState<CoffeeBean | null>(null)
+
+  // --- Gamification --------------------------------------------------------
+  const beansList = useMemo(() => beans || [], [beans])
+  const extractionsList = useMemo(() => extractions || [], [extractions])
+  const tastingsList = useMemo(() => tastingProfiles || [], [tastingProfiles])
+
+  const gameStats = useMemo(
+    () => computeStats(beansList, extractionsList, tastingsList),
+    [beansList, extractionsList, tastingsList],
+  )
+  const xp = useMemo(
+    () => computeXp(beansList, extractionsList, tastingsList),
+    [beansList, extractionsList, tastingsList],
+  )
+  const levelProgress = useMemo(() => getLevelProgress(xp), [xp])
+  const earnedAchievements = useMemo(
+    () => getEarnedAchievements(gameStats),
+    [gameStats],
+  )
+  const hasFirstBean = gameStats.beanCount > 0
+
+  const [notifiedAchievementIds, setNotifiedAchievementIds] = useKV<string[]>(
+    `${userKey}:notified-achievements`,
+    [],
+  )
+  const [notifiedLevel, setNotifiedLevel] = useKV<number>(
+    `${userKey}:notified-level`,
+    1,
+  )
+
+  // Toast when new achievements are unlocked.
+  useEffect(() => {
+    const knownIds = new Set(notifiedAchievementIds || [])
+    const newlyEarned = earnedAchievements.filter((a) => !knownIds.has(a.id))
+    if (newlyEarned.length === 0) return
+    for (const a of newlyEarned) {
+      toast.success(`🏅 Achievement unlocked: ${a.title}`, {
+        description: a.description,
+      })
+    }
+    setNotifiedAchievementIds([
+      ...(notifiedAchievementIds || []),
+      ...newlyEarned.map((a) => a.id),
+    ])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [earnedAchievements])
+
+  // Toast on level-up.
+  useEffect(() => {
+    const current = levelProgress.current.level
+    if (current > (notifiedLevel || 1)) {
+      toast.success(`✨ Level up! You are now Level ${current}`, {
+        description: levelProgress.current.title,
+      })
+      setNotifiedLevel(current)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [levelProgress.current.level])
+  // -------------------------------------------------------------------------
 
   const filteredBeans = useMemo(() => {
     let beansToFilter = (beans || []).filter((bean) => bean.type === coffeeType && !bean.archived)
@@ -358,6 +426,14 @@ function AuthenticatedApp({
                 <span className="text-muted-foreground">tastings</span>
               </span>
             </div>
+          )}
+
+          {/* Hidden gamification panel — only appears after the first bean. */}
+          {hasFirstBean && (
+            <>
+              <LevelBadge progress={levelProgress} />
+              <AchievementsRow earned={earnedAchievements} />
+            </>
           )}
         </header>
 
@@ -579,6 +655,7 @@ function AuthenticatedApp({
       </AlertDialog>
 
       <Toaster position="top-center" />
+      <BeanClickBurst />
     </div>
   )
 }
