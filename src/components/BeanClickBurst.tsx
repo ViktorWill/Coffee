@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { CSSProperties, useEffect, useRef, useState } from 'react'
 
 interface Bean {
   id: number
@@ -83,22 +83,18 @@ export function BeanClickBurst() {
       aria-hidden="true"
       className="pointer-events-none fixed inset-0 z-[9999] overflow-hidden"
     >
-      {beans.map((b) => (
-        <span
-          key={b.id}
-          className="bean-burst-piece"
-          style={{
-            left: `${b.x}px`,
-            top: `${b.y}px`,
-            width: `${b.size}px`,
-            height: `${b.size * 1.35}px`,
-            animationDuration: `${b.duration}ms`,
-            // CSS vars consumed by the keyframes in index.css
-            ['--bean-drift' as never]: `${b.drift}px`,
-            ['--bean-rotate' as never]: `${b.rotate}deg`,
-          }}
-        />
-      ))}
+      {beans.map((b) => {
+        const style: CSSProperties & Record<'--bean-drift' | '--bean-rotate', string> = {
+          left: `${b.x}px`,
+          top: `${b.y}px`,
+          width: `${b.size}px`,
+          height: `${b.size * 1.35}px`,
+          animationDuration: `${b.duration}ms`,
+          '--bean-drift': `${b.drift}px`,
+          '--bean-rotate': `${b.rotate}deg`,
+        }
+        return <span key={b.id} className="bean-burst-piece" style={style} />
+      })}
     </div>
   )
 }
