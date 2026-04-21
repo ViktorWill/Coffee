@@ -42,15 +42,31 @@ export interface CoffeeBean {
   archived?: boolean
 }
 
+export interface Grinder {
+  id: string
+  name: string
+  brand?: string
+  createdAt: number
+}
+
+export interface FilterRecipe {
+  numberOfPours: number
+  waterPerPourMl: number
+  totalWaterMl: number
+  coffeeWeightG: number
+}
+
 export interface Extraction {
   id: string
   beanId: string
+  grinderId?: string
   grindSetting: number
   timeSeconds: number
   outputGrams: number
   dosingWeight?: number
   tasteNotes: TasteNote[]
   notes?: string
+  filterRecipe?: FilterRecipe
   timestamp: number
 }
 

@@ -135,6 +135,43 @@ export function BeanCard({ bean, extractions, tastingProfiles, onAddExtraction, 
                   </div>
                 </>
               )}
+              {bean.type === 'filter' && latestExtraction.filterRecipe && latestExtraction.filterRecipe.coffeeWeightG > 0 && (
+                <>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Coffee</span>
+                    <span className="font-mono font-medium">
+                      {latestExtraction.filterRecipe.coffeeWeightG}g
+                    </span>
+                  </div>
+                  {latestExtraction.filterRecipe.numberOfPours > 0 && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Pours</span>
+                      <span className="font-mono font-medium">
+                        {latestExtraction.filterRecipe.numberOfPours}
+                        {latestExtraction.filterRecipe.waterPerPourMl > 0
+                          ? ` × ${latestExtraction.filterRecipe.waterPerPourMl}ml`
+                          : ''}
+                      </span>
+                    </div>
+                  )}
+                  {latestExtraction.filterRecipe.totalWaterMl > 0 && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Total Water</span>
+                      <span className="font-mono font-medium">
+                        {latestExtraction.filterRecipe.totalWaterMl}ml
+                      </span>
+                    </div>
+                  )}
+                  {latestExtraction.filterRecipe.totalWaterMl > 0 && latestExtraction.filterRecipe.coffeeWeightG > 0 && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Ratio</span>
+                      <span className="font-mono font-medium text-accent">
+                        1:{(latestExtraction.filterRecipe.totalWaterMl / latestExtraction.filterRecipe.coffeeWeightG).toFixed(1)}
+                      </span>
+                    </div>
+                  )}
+                </>
+              )}
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Time</span>
                 <span className="font-mono font-medium">

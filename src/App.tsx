@@ -4,13 +4,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Toaster } from '@/components/ui/sonner'
-import { CoffeeBean, Extraction, CoffeeType, TastingProfile } from '@/lib/types'
+import { CoffeeBean, Extraction, CoffeeType, TastingProfile, Grinder } from '@/lib/types'
 import { COFFEE_ORIGINS, ROAST_LEVELS } from '@/lib/constants'
 import { BeanCard } from '@/components/BeanCard'
 import { NewBeanDialog } from '@/components/NewBeanDialog'
 import { EditBeanDialog } from '@/components/EditBeanDialog'
 import { ExtractionDialog } from '@/components/ExtractionDialog'
 import { TastingProfileDialog } from '@/components/TastingProfileDialog'
+import { GrinderDialog } from '@/components/GrinderDialog'
 import { AuthDialog } from '@/components/AuthDialog'
 import { UserHeader } from '@/components/UserHeader'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
@@ -34,6 +35,7 @@ function App() {
   const [editBeanDialogOpen, setEditBeanDialogOpen] = useState(false)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [beanToDelete, setBeanToDelete] = useState<CoffeeBean | null>(null)
+  const [grinderDialogOpen, setGrinderDialogOpen] = useState(false)
 
   useEffect(() => {
     const initAuth = async () => {
@@ -110,6 +112,8 @@ function App() {
     setTastingProfileDialogOpen={setTastingProfileDialogOpen}
     selectedBean={selectedBean}
     setSelectedBean={setSelectedBean}
+    grinderDialogOpen={grinderDialogOpen}
+    setGrinderDialogOpen={setGrinderDialogOpen}
   />
 }
 
@@ -129,6 +133,8 @@ interface AuthenticatedAppProps {
   setTastingProfileDialogOpen: (open: boolean) => void
   selectedBean: CoffeeBean | null
   setSelectedBean: (bean: CoffeeBean | null) => void
+  grinderDialogOpen: boolean
+  setGrinderDialogOpen: (open: boolean) => void
 }
 
 function AuthenticatedApp({
@@ -147,6 +153,8 @@ function AuthenticatedApp({
   setTastingProfileDialogOpen,
   selectedBean,
   setSelectedBean,
+  grinderDialogOpen,
+  setGrinderDialogOpen,
 }: AuthenticatedAppProps) {
   const [beans, setBeans] = useKV<CoffeeBean[]>(
     `${currentUserId}:coffee-beans`,
@@ -158,6 +166,10 @@ function AuthenticatedApp({
   )
   const [tastingProfiles, setTastingProfiles] = useKV<TastingProfile[]>(
     `${currentUserId}:tasting-profiles`,
+    []
+  )
+  const [grinders, setGrinders] = useKV<Grinder[]>(
+    `${currentUserId}:grinders`,
     []
   )
 
@@ -286,6 +298,16 @@ function AuthenticatedApp({
     setDeleteConfirmOpen(true)
   }
 
+  const handleSaveGrinder = (grinderData: Omit<Grinder, 'id' | 'createdAt'>) => {
+    const newGrinder: Grinder = {
+      ...grinderData,
+      id: ulid(),
+      createdAt: Date.now(),
+    }
+    setGrinders((current) => [...(current || []), newGrinder])
+    toast.success('Grinder added successfully')
+  }
+
   const confirmDeleteBean = () => {
     if (!beanToDelete) return
     
@@ -311,13 +333,20 @@ function AuthenticatedApp({
       <div className="container max-w-7xl mx-auto px-4 py-6 md:px-6 md:py-8">
         <header className="mb-8">
           <div className="flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-2 tracking-tight">
-                Coffee Dialer
-              </h1>
-              <p className="text-muted-foreground text-sm md:text-base">
-                Perfect your espresso and filter coffee with intelligent extraction tracking
-              </p>
+            <div className="flex items-center gap-4">
+              <img
+                src="https://github.com/user-attachments/assets/c32a1826-2fc6-4d70-81b2-f2d7a2eb3cf2"
+                alt="Bean Sheet logo"
+                className="h-16 w-16 object-contain flex-shrink-0"
+              />
+              <div>
+                <h1 className="text-3xl md:text-4xl font-bold mb-1 tracking-tight">
+                  Bean Sheet
+                </h1>
+                <p className="text-muted-foreground text-sm md:text-base">
+                  Perfect your espresso and filter coffee with intelligent extraction tracking
+                </p>
+              </div>
             </div>
             <UserHeader username={currentUsername} onSignOut={onSignOut} />
           </div>
@@ -498,7 +527,15 @@ function AuthenticatedApp({
         open={extractionDialogOpen}
         onOpenChange={setExtractionDialogOpen}
         bean={selectedBean}
+        grinders={grinders || []}
         onSave={handleSaveExtraction}
+        onAddGrinder={() => setGrinderDialogOpen(true)}
+      />
+
+      <GrinderDialog
+        open={grinderDialogOpen}
+        onOpenChange={setGrinderDialogOpen}
+        onSave={handleSaveGrinder}
       />
 
       <TastingProfileDialog

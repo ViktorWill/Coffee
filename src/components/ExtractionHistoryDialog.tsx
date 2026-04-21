@@ -290,26 +290,63 @@ export function ExtractionHistoryDialog({
                               transition={{ duration: 0.3 }}
                               className="overflow-hidden"
                             >
-                              <div className="px-4 pb-4 pt-2 space-y-3 border-t">
-                                {extraction.dosingWeight && (
-                                  <div className="bg-muted/50 rounded-lg p-3">
-                                    <div className="grid grid-cols-2 gap-3">
-                                      <div>
-                                        <p className="text-xs text-muted-foreground mb-1">Dose</p>
-                                        <p className="font-mono font-semibold">{extraction.dosingWeight}g</p>
+                                <div className="px-4 pb-4 pt-2 space-y-3 border-t">
+                                  {extraction.dosingWeight && (
+                                    <div className="bg-muted/50 rounded-lg p-3">
+                                      <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                          <p className="text-xs text-muted-foreground mb-1">Dose</p>
+                                          <p className="font-mono font-semibold">{extraction.dosingWeight}g</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-xs text-muted-foreground mb-1">Brew Ratio</p>
+                                          <p className="font-mono font-semibold text-accent">
+                                            1:{(extraction.outputGrams / extraction.dosingWeight).toFixed(2)}
+                                          </p>
+                                        </div>
                                       </div>
-                                      <div>
-                                        <p className="text-xs text-muted-foreground mb-1">Brew Ratio</p>
-                                        <p className="font-mono font-semibold text-accent">
-                                          1:{(extraction.outputGrams / extraction.dosingWeight).toFixed(2)}
-                                        </p>
+                                      <p className="text-xs text-muted-foreground mt-2">
+                                        {extraction.dosingWeight}g → {extraction.outputGrams}g in {extraction.timeSeconds}s
+                                      </p>
+                                    </div>
+                                  )}
+
+                                  {extraction.filterRecipe && (extraction.filterRecipe.coffeeWeightG > 0 || extraction.filterRecipe.numberOfPours > 0) && (
+                                    <div className="bg-muted/50 rounded-lg p-3">
+                                      <p className="text-xs font-semibold text-muted-foreground mb-2">Pour Recipe</p>
+                                      <div className="grid grid-cols-2 gap-2">
+                                        {extraction.filterRecipe.coffeeWeightG > 0 && (
+                                          <div>
+                                            <p className="text-xs text-muted-foreground">Coffee</p>
+                                            <p className="font-mono font-semibold text-sm">{extraction.filterRecipe.coffeeWeightG}g</p>
+                                          </div>
+                                        )}
+                                        {extraction.filterRecipe.numberOfPours > 0 && (
+                                          <div>
+                                            <p className="text-xs text-muted-foreground">Pours</p>
+                                            <p className="font-mono font-semibold text-sm">
+                                              {extraction.filterRecipe.numberOfPours}
+                                              {extraction.filterRecipe.waterPerPourMl > 0 ? ` × ${extraction.filterRecipe.waterPerPourMl}ml` : ''}
+                                            </p>
+                                          </div>
+                                        )}
+                                        {extraction.filterRecipe.totalWaterMl > 0 && (
+                                          <div>
+                                            <p className="text-xs text-muted-foreground">Total Water</p>
+                                            <p className="font-mono font-semibold text-sm">{extraction.filterRecipe.totalWaterMl}ml</p>
+                                          </div>
+                                        )}
+                                        {extraction.filterRecipe.totalWaterMl > 0 && extraction.filterRecipe.coffeeWeightG > 0 && (
+                                          <div>
+                                            <p className="text-xs text-muted-foreground">Ratio</p>
+                                            <p className="font-mono font-semibold text-sm text-accent">
+                                              1:{(extraction.filterRecipe.totalWaterMl / extraction.filterRecipe.coffeeWeightG).toFixed(1)}
+                                            </p>
+                                          </div>
+                                        )}
                                       </div>
                                     </div>
-                                    <p className="text-xs text-muted-foreground mt-2">
-                                      {extraction.dosingWeight}g → {extraction.outputGrams}g in {extraction.timeSeconds}s
-                                    </p>
-                                  </div>
-                                )}
+                                  )}
 
                                 {extraction.notes && (
                                   <div className="bg-muted/30 rounded-lg p-3">
@@ -346,7 +383,7 @@ export function ExtractionHistoryDialog({
                                           {advisor.suggestedChange && (
                                             <span className="block mt-1.5 font-medium">
                                               Suggested: {advisor.suggestedChange > 0 ? '+' : ''}
-                                              {advisor.suggestedChange} on Mazzer Philos
+                                              {advisor.suggestedChange} on grinder
                                             </span>
                                           )}
                                         </AlertDescription>
