@@ -32,7 +32,7 @@ export function getAdvisorRecommendation(
     if (hasSour || hasWatery) {
       return {
         direction: 'finer',
-        reasoning: `${hasSour ? 'Sour' : 'Watery'} espresso indicates under-extraction. ${tooFast ? `Your shot pulled in ${timeSeconds}s (target ~25-30s). ` : ''}Grind finer on your Mazzer Philos to slow flow and increase extraction. Aim for 25-30 second extraction time.`,
+        reasoning: `${hasSour ? 'Sour' : 'Watery'} espresso indicates under-extraction. ${tooFast ? `Your shot pulled in ${timeSeconds}s (target ~25-30s). ` : ''}Grind finer on your grinder to slow flow and increase extraction. Aim for 25-30 second extraction time.`,
         suggestedChange: -0.5,
       }
     }
@@ -40,7 +40,7 @@ export function getAdvisorRecommendation(
     if (hasBitter || hasAstringent || hasTooIntense) {
       return {
         direction: 'coarser',
-        reasoning: `${hasBitter ? 'Bitter' : hasAstringent ? 'Astringent' : 'Too intense'} flavors suggest over-extraction. ${tooSlow ? `Your shot took ${timeSeconds}s (target ~25-30s). ` : ''}Grind coarser on your Mazzer Philos to speed up flow. Target 25-30 seconds with a 1:2 ratio.`,
+        reasoning: `${hasBitter ? 'Bitter' : hasAstringent ? 'Astringent' : 'Too intense'} flavors suggest over-extraction. ${tooSlow ? `Your shot took ${timeSeconds}s (target ~25-30s). ` : ''}Grind coarser on your grinder to speed up flow. Target 25-30 seconds with a 1:2 ratio.`,
         suggestedChange: 0.5,
       }
     }
@@ -75,7 +75,7 @@ export function getAdvisorRecommendation(
     if (hasSour || hasWatery) {
       return {
         direction: 'finer',
-        reasoning: `${hasSour ? 'Sour' : 'Watery'} filter coffee indicates under-extraction. ${tooFast ? `Your brew finished in ${Math.floor(timeSeconds / 60)}:${String(timeSeconds % 60).padStart(2, '0')}. ` : ''}Grind finer on your Mazzer Philos to slow water flow through the bed. Target 2:30-3:30 total brew time.`,
+        reasoning: `${hasSour ? 'Sour' : 'Watery'} filter coffee indicates under-extraction. ${tooFast ? `Your brew finished in ${Math.floor(timeSeconds / 60)}:${String(timeSeconds % 60).padStart(2, '0')}. ` : ''}Grind finer on your grinder to slow water flow through the bed. Target 2:30-3:30 total brew time.`,
         suggestedChange: -1,
       }
     }
