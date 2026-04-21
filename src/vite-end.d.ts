@@ -1,9 +1,11 @@
 /// <reference types="vite/client" />
 
+export {}
+
 declare global {
   interface Window {
     spark: {
-      llmPrompt: (strings: TemplateStringsArray, ...values: any[]) => string
+      llmPrompt: (strings: TemplateStringsArray, ...values: unknown[]) => string
       llm: (prompt: string, modelName?: string, imageBase64?: string | boolean) => Promise<string>
       user: () => Promise<{
         id: string
