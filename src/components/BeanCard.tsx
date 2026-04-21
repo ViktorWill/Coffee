@@ -39,11 +39,16 @@ export function BeanCard({ bean, extractions, tastingProfiles, onAddExtraction, 
   return (
     <>
       <motion.div
-        initial={{ opacity: 0, scale: 0.97 }}
-        animate={{ opacity: 1, scale: 1 }}
+        initial={{ opacity: 0, scale: 0.97, y: 6 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.3, ease: 'easeOut' }}
+        whileHover={{ y: -3 }}
       >
-        <Card className="hover:shadow-lg hover:border-accent/50 transition-all duration-200">
+        <Card className="card-elevated overflow-hidden hover:shadow-xl hover:border-accent/60 transition-all duration-200">
+        <div
+          className={`bean-card-strip ${bean.type === 'filter' ? 'bean-card-strip-filter' : ''}`}
+          aria-hidden="true"
+        />
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
@@ -112,7 +117,7 @@ export function BeanCard({ bean, extractions, tastingProfiles, onAddExtraction, 
         
         <CardContent className="space-y-3">
           {latestExtraction ? (
-            <div className="bg-muted/50 rounded-lg p-3 space-y-2">
+            <div className="rounded-lg p-3 space-y-2 bg-gradient-to-br from-secondary/40 via-muted/40 to-accent/10 border border-border/60">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Latest Grind</span>
                 <span className="font-mono font-medium">
