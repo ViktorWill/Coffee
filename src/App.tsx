@@ -323,7 +323,7 @@ function AuthenticatedApp({
                   Bean Sheet
                 </h1>
                 <p className="text-muted-foreground text-sm md:text-base">
-                  Perfect your espresso and filter coffee with intelligent extraction tracking
+                  Improve your grind with intelligent extraction tracking
                 </p>
               </div>
             </div>
