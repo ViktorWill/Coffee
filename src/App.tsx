@@ -15,7 +15,7 @@ import { GrinderDialog } from '@/components/GrinderDialog'
 import { AuthDialog } from '@/components/AuthDialog'
 import { UserHeader } from '@/components/UserHeader'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
-import { Coffee, Funnel, Plus, SortAscending, Faders } from '@phosphor-icons/react'
+import { Coffee, Funnel, Plus, SortAscending, Faders, ChartLineUp, Palette } from '@phosphor-icons/react'
 import { ulid } from 'ulid'
 import { toast } from 'sonner'
 
@@ -75,10 +75,15 @@ function App() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <Coffee size={48} weight="fill" className="mx-auto text-primary mb-4 animate-pulse" />
-          <p className="text-muted-foreground">Loading...</p>
+          <div className="relative inline-block mb-4">
+            <span className="absolute left-1/2 -top-2 -translate-x-1/2 block h-3 w-1.5 rounded-full bg-primary/30 blur-sm animate-steam" aria-hidden="true" />
+            <span className="absolute left-1/2 -top-2 -translate-x-[140%] block h-3 w-1.5 rounded-full bg-primary/20 blur-sm animate-steam animate-steam-delay-1" aria-hidden="true" />
+            <span className="absolute left-1/2 -top-2 translate-x-[40%] block h-3 w-1.5 rounded-full bg-primary/20 blur-sm animate-steam animate-steam-delay-2" aria-hidden="true" />
+            <Coffee size={56} weight="fill" className="mx-auto text-primary animate-bean-bob" />
+          </div>
+          <p className="text-muted-foreground">Brewing your beans…</p>
         </div>
       </div>
     )
@@ -308,27 +313,52 @@ function AuthenticatedApp({
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <div className="container max-w-7xl mx-auto px-4 py-6 md:px-6 md:py-8">
         <header className="mb-8">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-4">
-              <img
-                src="https://github.com/user-attachments/assets/c32a1826-2fc6-4d70-81b2-f2d7a2eb3cf2"
-                alt="Bean Sheet logo"
-                className="h-16 w-16 object-contain flex-shrink-0"
-              />
+              <div className="relative flex-shrink-0">
+                <span className="pointer-events-none absolute left-1/2 -top-3 -translate-x-1/2 block h-3 w-1.5 rounded-full bg-primary/30 blur-sm animate-steam" aria-hidden="true" />
+                <span className="pointer-events-none absolute left-1/2 -top-3 -translate-x-[160%] block h-3 w-1.5 rounded-full bg-primary/25 blur-sm animate-steam animate-steam-delay-1" aria-hidden="true" />
+                <span className="pointer-events-none absolute left-1/2 -top-3 translate-x-[60%] block h-3 w-1.5 rounded-full bg-primary/25 blur-sm animate-steam animate-steam-delay-2" aria-hidden="true" />
+                <img
+                  src="https://github.com/user-attachments/assets/c32a1826-2fc6-4d70-81b2-f2d7a2eb3cf2"
+                  alt="Bean Sheet logo"
+                  className="h-16 w-16 object-contain drop-shadow-sm"
+                />
+              </div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold mb-1 tracking-tight">
+                <h1 className="text-3xl md:text-4xl font-bold mb-1 tracking-tight text-gradient-brand">
                   Bean Sheet
                 </h1>
                 <p className="text-muted-foreground text-sm md:text-base">
-                  Improve your grind with intelligent extraction tracking
+                  Dial in your grind, chase the perfect cup ☕
                 </p>
               </div>
             </div>
             <UserHeader username={currentUsername} onSignOut={onSignOut} />
           </div>
+
+          {((beans?.length ?? 0) > 0 || (extractions?.length ?? 0) > 0 || (tastingProfiles?.length ?? 0) > 0) && (
+            <div className="mt-5 flex flex-wrap gap-2">
+              <span className="stat-chip">
+                <Coffee size={14} weight="fill" className="stat-chip-icon" />
+                <span className="font-mono font-semibold">{beans?.filter((b) => !b.archived).length ?? 0}</span>
+                <span className="text-muted-foreground">beans</span>
+              </span>
+              <span className="stat-chip">
+                <ChartLineUp size={14} weight="bold" className="stat-chip-icon" />
+                <span className="font-mono font-semibold">{extractions?.length ?? 0}</span>
+                <span className="text-muted-foreground">extractions</span>
+              </span>
+              <span className="stat-chip">
+                <Palette size={14} weight="fill" className="stat-chip-icon" />
+                <span className="font-mono font-semibold">{tastingProfiles?.length ?? 0}</span>
+                <span className="text-muted-foreground">tastings</span>
+              </span>
+            </div>
+          )}
         </header>
 
         <Tabs value={coffeeType} onValueChange={(v) => setCoffeeType(v as CoffeeType)} className="space-y-6">
@@ -431,10 +461,10 @@ function AuthenticatedApp({
             {filteredBeans.length === 0 ? (
               <div className="text-center py-16 px-4">
                 <div className="max-w-md mx-auto space-y-4">
-                  <Coffee size={64} weight="thin" className="mx-auto text-muted-foreground/50" />
-                  <h3 className="text-xl font-semibold">No espresso beans yet</h3>
+                  <Coffee size={64} weight="fill" className="mx-auto text-primary/70 animate-bean-bob" />
+                  <h3 className="text-xl font-semibold">Your espresso shelf is empty</h3>
                   <p className="text-muted-foreground text-sm">
-                    Start by adding your first espresso bean. Upload a photo of the package and we'll extract the details automatically.
+                    Snap a photo of your next bag — we'll pull out the details so you can get straight to pulling shots.
                   </p>
                   <Button onClick={() => setNewBeanDialogOpen(true)} className="gap-2">
                     <Plus size={18} weight="bold" />
@@ -464,10 +494,10 @@ function AuthenticatedApp({
             {filteredBeans.length === 0 ? (
               <div className="text-center py-16 px-4">
                 <div className="max-w-md mx-auto space-y-4">
-                  <Funnel size={64} weight="thin" className="mx-auto text-muted-foreground/50" />
-                  <h3 className="text-xl font-semibold">No filter coffee beans yet</h3>
+                  <Funnel size={64} weight="fill" className="mx-auto text-accent animate-bean-bob" />
+                  <h3 className="text-xl font-semibold">No pour-over picks yet</h3>
                   <p className="text-muted-foreground text-sm">
-                    Start by adding your first filter coffee bean. Upload a photo of the package and we'll extract the details automatically.
+                    Add your first filter bean and we'll help you track every brew, ratio and tasting note along the way.
                   </p>
                   <Button onClick={() => setNewBeanDialogOpen(true)} className="gap-2">
                     <Plus size={18} weight="bold" />
