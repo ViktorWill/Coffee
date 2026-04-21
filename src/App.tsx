@@ -32,9 +32,6 @@ function App() {
   const [extractionDialogOpen, setExtractionDialogOpen] = useState(false)
   const [tastingProfileDialogOpen, setTastingProfileDialogOpen] = useState(false)
   const [selectedBean, setSelectedBean] = useState<CoffeeBean | null>(null)
-  const [editBeanDialogOpen, setEditBeanDialogOpen] = useState(false)
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
-  const [beanToDelete, setBeanToDelete] = useState<CoffeeBean | null>(null)
   const [grinderDialogOpen, setGrinderDialogOpen] = useState(false)
 
   useEffect(() => {
@@ -156,41 +153,29 @@ function AuthenticatedApp({
   grinderDialogOpen,
   setGrinderDialogOpen,
 }: AuthenticatedAppProps) {
+  const userKey = encodeURIComponent(currentUserId)
   const [beans, setBeans] = useKV<CoffeeBean[]>(
-    `${currentUserId}:coffee-beans`,
+    `${userKey}:coffee-beans`,
     []
   )
   const [extractions, setExtractions] = useKV<Extraction[]>(
-    `${currentUserId}:extractions`,
+    `${userKey}:extractions`,
     []
   )
   const [tastingProfiles, setTastingProfiles] = useKV<TastingProfile[]>(
-    `${currentUserId}:tasting-profiles`,
+    `${userKey}:tasting-profiles`,
     []
   )
   const [grinders, setGrinders] = useKV<Grinder[]>(
-    `${currentUserId}:grinders`,
+    `${userKey}:grinders`,
     []
   )
 
   const [filterOrigin, setFilterOrigin] = useState<string>('all')
   const [filterRoast, setFilterRoast] = useState<string>('all')
-  const [isDataLoaded, setIsDataLoaded] = useState(false)
   const [editBeanDialogOpen, setEditBeanDialogOpen] = useState(false)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [beanToDelete, setBeanToDelete] = useState<CoffeeBean | null>(null)
-
-  useEffect(() => {
-    const checkData = async () => {
-      console.log(`Loading data for user: ${currentUserId}`)
-      setIsDataLoaded(true)
-    }
-    checkData()
-  }, [currentUserId])
-
-  useEffect(() => {
-    console.log('Beans state updated:', beans)
-  }, [beans])
 
   const filteredBeans = useMemo(() => {
     let beansToFilter = (beans || []).filter((bean) => bean.type === coffeeType && !bean.archived)
@@ -202,25 +187,26 @@ function AuthenticatedApp({
     if (filterRoast !== 'all') {
       beansToFilter = beansToFilter.filter((bean) => bean.roastLevel === filterRoast)
     }
-    
+
+    const sorted = [...beansToFilter]
     switch (sortBy) {
       case 'oldest':
-        return beansToFilter.sort((a, b) => a.createdAt - b.createdAt)
+        return sorted.sort((a, b) => a.createdAt - b.createdAt)
       case 'name-asc':
-        return beansToFilter.sort((a, b) => a.name.localeCompare(b.name))
+        return sorted.sort((a, b) => a.name.localeCompare(b.name))
       case 'name-desc':
-        return beansToFilter.sort((a, b) => b.name.localeCompare(a.name))
+        return sorted.sort((a, b) => b.name.localeCompare(a.name))
       case 'origin-asc':
-        return beansToFilter.sort((a, b) => (a.origin || '').localeCompare(b.origin || ''))
+        return sorted.sort((a, b) => (a.origin || '').localeCompare(b.origin || ''))
       case 'origin-desc':
-        return beansToFilter.sort((a, b) => (b.origin || '').localeCompare(a.origin || ''))
+        return sorted.sort((a, b) => (b.origin || '').localeCompare(a.origin || ''))
       case 'roast-asc':
-        return beansToFilter.sort((a, b) => (a.roastLevel || '').localeCompare(b.roastLevel || ''))
+        return sorted.sort((a, b) => (a.roastLevel || '').localeCompare(b.roastLevel || ''))
       case 'roast-desc':
-        return beansToFilter.sort((a, b) => (b.roastLevel || '').localeCompare(a.roastLevel || ''))
+        return sorted.sort((a, b) => (b.roastLevel || '').localeCompare(a.roastLevel || ''))
       case 'newest':
       default:
-        return beansToFilter.sort((a, b) => b.createdAt - a.createdAt)
+        return sorted.sort((a, b) => b.createdAt - a.createdAt)
     }
   }, [beans, coffeeType, sortBy, filterOrigin, filterRoast])
 
@@ -230,16 +216,9 @@ function AuthenticatedApp({
       id: ulid(),
       createdAt: Date.now(),
     }
-    
-    console.log('Saving new bean:', newBean)
-    console.log('Current userId:', currentUserId)
-    
-    setBeans((currentBeans) => {
-      const updated = [...(currentBeans || []), newBean]
-      console.log('Updated beans array:', updated)
-      return updated
-    })
-    
+
+    setBeans((currentBeans) => [...(currentBeans || []), newBean])
+
     toast.success('Bean added successfully')
   }
 

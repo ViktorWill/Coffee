@@ -88,7 +88,8 @@ export function ExtractionDialog({ open, onOpenChange, bean, grinders, onSave, o
     const grind = parseFloat(grindSetting)
     const time = parseFloat(timeSeconds)
     const output = parseFloat(outputGrams)
-    const dose = dosingWeight ? parseFloat(dosingWeight) : undefined
+    const trimmedDose = dosingWeight.trim()
+    const dose = trimmedDose === '' ? undefined : parseFloat(trimmedDose)
 
     if (isNaN(grind) || grind <= 0) {
       toast.error('Please enter a valid grind setting')
@@ -105,7 +106,7 @@ export function ExtractionDialog({ open, onOpenChange, bean, grinders, onSave, o
       return
     }
 
-    if (!isFilter && dosingWeight && (isNaN(dose!) || dose! <= 0)) {
+    if (!isFilter && dose !== undefined && (isNaN(dose) || dose <= 0)) {
       toast.error('Please enter a valid dosing weight')
       return
     }
