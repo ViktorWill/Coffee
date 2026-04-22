@@ -96,8 +96,50 @@ export function useKV<T>(
     }
 
     fetchValue()
+
+    // Allow external code (e.g. a Refresh button) to ask every useKV instance
+    // to re-pull from the server. We flush any pending local write first so
+    // unsynced changes aren't silently overwritten by the refetch.
+    const handleRefresh = async () => {
+      if (debounceTimerRef.current !== null) {
+        clearTimeout(debounceTimerRef.current)
+        debounceTimerRef.current = null
+        const ok = await persistWithRetry(key, valueRef.current)
+        if (ok) {
+          try { localStorage.removeItem(RECOVERY_PREFIX + key) } catch { /* ignore */ }
+        }
+      }
+      dirtyRef.current = false
+      setIsLoading(true)
+      try {
+        const res = await fetch(`/api/kv?key=${encodeURIComponent(key)}`)
+        if (cancelled || dirtyRef.current) return
+        if (res.status === 401) {
+          triggerReauth()
+          return
+        }
+        if (!res.ok) return
+        const data = await res.json()
+        if (cancelled || dirtyRef.current) return
+        if (data.value !== undefined && data.value !== null) {
+          setValueState(data.value as T)
+          valueRef.current = data.value as T
+        }
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.error(`useKV: Failed to refresh key "${key}":`, error)
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false)
+        }
+      }
+    }
+    window.addEventListener('kv:refresh', handleRefresh)
+
     return () => {
       cancelled = true
+      window.removeEventListener('kv:refresh', handleRefresh)
       // Flush any pending debounced write so we don't drop data on unmount/key-change.
       if (debounceTimerRef.current !== null) {
         clearTimeout(debounceTimerRef.current)

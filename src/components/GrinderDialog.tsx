@@ -35,7 +35,7 @@ export function GrinderDialog({ open, onOpenChange, onSave }: GrinderDialogProps
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-[400px]">
+      <DialogContent className="sm:max-w-[400px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add Grinder</DialogTitle>
         </DialogHeader>

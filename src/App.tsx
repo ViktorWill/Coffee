@@ -18,7 +18,7 @@ import { LevelBadge } from '@/components/LevelBadge'
 import { AchievementsRow } from '@/components/AchievementsRow'
 import { BeanClickBurst } from '@/components/BeanClickBurst'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
-import { Coffee, Funnel, Plus, SortAscending, Faders, ChartLineUp, Palette } from '@phosphor-icons/react'
+import { Coffee, Funnel, Plus, SortAscending, Faders, ChartLineUp, Palette, ArrowsClockwise } from '@phosphor-icons/react'
 import { ulid } from 'ulid'
 import { toast } from 'sonner'
 import {
@@ -190,6 +190,20 @@ function AuthenticatedApp({
   const [editBeanDialogOpen, setEditBeanDialogOpen] = useState(false)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [beanToDelete, setBeanToDelete] = useState<CoffeeBean | null>(null)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+
+  // Re-fetch all useKV-backed data from the server. Useful when changes were
+  // made on a different device.
+  const handleRefresh = async () => {
+    if (isRefreshing) return
+    setIsRefreshing(true)
+    window.dispatchEvent(new Event('kv:refresh'))
+    // Give the in-flight refetches a moment to land before re-enabling the
+    // button, and surface a toast so the action feels acknowledged.
+    await new Promise((r) => setTimeout(r, 600))
+    setIsRefreshing(false)
+    toast.success('Refreshed from cloud')
+  }
 
   // --- Gamification --------------------------------------------------------
   const beansList = useMemo(() => beans || [], [beans])
@@ -230,10 +244,17 @@ function AuthenticatedApp({
         description: a.description,
       })
     }
-    setNotifiedAchievementIds([
-      ...(notifiedAchievementIds || []),
-      ...newlyEarned.map((a) => a.id),
-    ])
+    setNotifiedAchievementIds((current) => {
+      const seen = new Set(current || [])
+      const merged = [...(current || [])]
+      for (const a of newlyEarned) {
+        if (!seen.has(a.id)) {
+          seen.add(a.id)
+          merged.push(a.id)
+        }
+      }
+      return merged
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [earnedAchievements])
 
@@ -405,7 +426,23 @@ function AuthenticatedApp({
                 </p>
               </div>
             </div>
-            <UserHeader username={currentUsername} onSignOut={onSignOut} />
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                aria-label="Refresh data from cloud"
+                title="Refresh data from cloud"
+              >
+                <ArrowsClockwise
+                  size={20}
+                  weight="bold"
+                  className={isRefreshing ? 'animate-spin' : ''}
+                />
+              </Button>
+              <UserHeader username={currentUsername} onSignOut={onSignOut} />
+            </div>
           </div>
 
           {((beans?.length ?? 0) > 0 || (extractions?.length ?? 0) > 0 || (tastingProfiles?.length ?? 0) > 0) && (

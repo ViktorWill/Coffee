@@ -19,7 +19,7 @@ export function AuthDialog({ open }: AuthDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-[400px]">
+      <DialogContent className="sm:max-w-[400px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex justify-center mb-2">
             <Coffee size={48} weight="fill" className="text-primary" />
