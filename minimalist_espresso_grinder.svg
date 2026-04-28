@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200" height="800" viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Minimalist black and white espresso grinder with coffee beans falling into hopper">
+  <rect width="1200" height="800" fill="#ffffff"/>
+
+  <defs>
+    <style>
+      .stroke { fill: none; stroke: #000000; stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; }
+      .thin { fill: none; stroke: #000000; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+      .fill { fill: #000000; stroke: #000000; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+      .white { fill: #ffffff; stroke: #000000; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+  </defs>
+
+  <!-- Falling beans -->
+  <g>
+    <g transform="translate(578 86) rotate(-25)">
+      <ellipse class="fill" cx="0" cy="0" rx="24" ry="36"/>
+      <path class="thin" stroke="#ffffff" d="M-5 -32 C14 -18 9 7 -7 32"/>
+    </g>
+    <g transform="translate(520 132) rotate(-42)">
+      <ellipse class="fill" cx="0" cy="0" rx="22" ry="33"/>
+      <path class="thin" stroke="#ffffff" d="M-5 -29 C12 -16 8 8 -6 29"/>
+    </g>
+    <g transform="translate(620 148) rotate(43)">
+      <ellipse class="fill" cx="0" cy="0" rx="22" ry="33"/>
+      <path class="thin" stroke="#ffffff" d="M-4 -28 C12 -13 7 10 -6 28"/>
+    </g>
+    <g transform="translate(555 204) rotate(-37)">
+      <ellipse class="fill" cx="0" cy="0" rx="22" ry="33"/>
+      <path class="thin" stroke="#ffffff" d="M-4 -29 C13 -15 8 8 -6 29"/>
+    </g>
+    <g transform="translate(603 248) rotate(25)">
+      <ellipse class="fill" cx="0" cy="0" rx="20" ry="31"/>
+      <path class="thin" stroke="#ffffff" d="M-5 -27 C10 -12 7 8 -5 27"/>
+    </g>
+    <g transform="translate(536 314) rotate(-35)">
+      <ellipse class="fill" cx="0" cy="0" rx="22" ry="33"/>
+      <path class="thin" stroke="#ffffff" d="M-5 -29 C13 -14 8 8 -7 29"/>
+    </g>
+  </g>
+
+  <!-- Hopper rim -->
+  <rect class="fill" x="445" y="252" width="310" height="28" rx="8"/>
+
+  <!-- Hopper glass body -->
+  <path class="stroke" d="M452 280 C455 350 485 430 520 492"/>
+  <path class="stroke" d="M748 280 C745 350 715 430 680 492"/>
+  <path class="stroke" d="M520 492 L680 492"/>
+
+  <!-- Beans inside hopper -->
+  <g>
+    <g transform="translate(520 432) rotate(-35)">
+      <ellipse class="fill" cx="0" cy="0" rx="22" ry="32"/>
+      <path class="thin" stroke="#ffffff" d="M-4 -27 C11 -14 8 8 -5 27"/>
+    </g>
+    <g transform="translate(555 433) rotate(12)">
+      <ellipse class="fill" cx="0" cy="0" rx="24" ry="34"/>
+      <path class="thin" stroke="#ffffff" d="M-5 -28 C14 -14 8 9 -6 28"/>
+    </g>
+    <g transform="translate(592 439) rotate(-18)">
+      <ellipse class="fill" cx="0" cy="0" rx="25" ry="34"/>
+      <path class="thin" stroke="#ffffff" d="M-5 -28 C13 -14 8 9 -6 28"/>
+    </g>
+    <g transform="translate(635 430) rotate(38)">
+      <ellipse class="fill" cx="0" cy="0" rx="23" ry="33"/>
+      <path class="thin" stroke="#ffffff" d="M-5 -27 C12 -14 8 9 -6 27"/>
+    </g>
+    <g transform="translate(576 466) rotate(82)">
+      <ellipse class="fill" cx="0" cy="0" rx="23" ry="36"/>
+      <path class="thin" stroke="#ffffff" d="M-4 -31 C12 -15 8 10 -6 31"/>
+    </g>
+  </g>
+
+  <!-- Neck and adjustment collar -->
+  <rect class="fill" x="505" y="486" width="190" height="30" rx="8"/>
+  <rect class="white" x="512" y="516" width="176" height="36"/>
+  <g>
+    <path class="thin" d="M526 520 L526 542"/>
+    <path class="thin" d="M540 520 L540 532"/>
+    <path class="thin" d="M554 520 L554 542"/>
+    <path class="thin" d="M568 520 L568 532"/>
+    <path class="thin" d="M582 520 L582 542"/>
+    <path class="thin" d="M596 520 L596 532"/>
+    <path class="thin" d="M610 520 L610 542"/>
+    <path class="thin" d="M624 520 L624 532"/>
+    <path class="thin" d="M638 520 L638 542"/>
+    <path class="thin" d="M652 520 L652 532"/>
+    <path class="thin" d="M666 520 L666 542"/>
+  </g>
+  <rect class="fill" x="685" y="532" width="65" height="12" rx="6"/>
+
+  <!-- Grinder body -->
+  <path class="stroke" d="M458 552 L742 552 Q756 552 758 568 L780 704 L420 704 L442 568 Q444 552 458 552 Z"/>
+  <path class="stroke" d="M430 704 L770 704"/>
+  <path class="stroke" d="M438 704 L438 720"/>
+  <path class="stroke" d="M762 704 L762 720"/>
+
+  <!-- Body panel split -->
+  <path class="stroke" d="M434 626 L766 626"/>
+  <path class="stroke" d="M500 626 L500 704"/>
+  <path class="stroke" d="M700 626 L700 704"/>
+
+  <!-- Dial -->
+  <circle class="stroke" cx="600" cy="600" r="42"/>
+  <circle class="fill" cx="600" cy="600" r="25"/>
+  <circle class="fill" cx="600" cy="552" r="7"/>
+
+  <!-- Chute and fork -->
+  <path class="fill" d="M562 626 L638 626 L624 676 L576 676 Z"/>
+  <path class="fill" d="M578 674 L622 674 L614 702 L586 702 Z"/>
+
+  <!-- Portafilter cup -->
+  <path class="white" d="M532 690 L668 690 L656 724 Q650 738 635 738 L565 738 Q550 738 544 724 Z"/>
+  <path class="stroke" d="M520 682 L680 682"/>
+  <rect class="white" x="512" y="676" width="24" height="16" rx="5"/>
+  <rect class="white" x="664" y="676" width="24" height="16" rx="5"/>
+  <path class="fill" d="M554 736 L646 736 L636 756 L564 756 Z"/>
+
+  <!-- Portafilter handle -->
+  <path class="stroke" d="M680 704 C718 704 762 696 812 694"/>
+  <rect class="fill" x="808" y="674" width="170" height="54" rx="27"/>
+  <path class="thin" stroke="#ffffff" d="M936 686 C928 699 928 711 936 724"/>
+
+  <!-- Base -->
+  <path class="white" d="M420 704 L780 704 L790 734 Q794 754 774 760 L426 760 Q406 754 410 734 Z"/>
+  <rect class="fill" x="428" y="758" width="56" height="20" rx="8"/>
+  <rect class="fill" x="716" y="758" width="56" height="20" rx="8"/>
+</svg>
