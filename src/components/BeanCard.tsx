@@ -39,16 +39,11 @@ export function BeanCard({ bean, extractions, tastingProfiles, onAddExtraction, 
   return (
     <>
       <motion.div
-        initial={{ opacity: 0, scale: 0.97, y: 6 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.3, ease: 'easeOut' }}
-        whileHover={{ y: -3 }}
+        initial={{ opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, ease: 'easeOut' }}
       >
-        <Card className="card-elevated overflow-hidden hover:shadow-xl hover:border-accent/60 transition-all duration-200">
-        <div
-          className={`bean-card-strip ${bean.type === 'filter' ? 'bean-card-strip-filter' : ''}`}
-          aria-hidden="true"
-        />
+        <Card className="card-elevated overflow-hidden hover:border-foreground/20 transition-colors duration-200">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
@@ -117,7 +112,7 @@ export function BeanCard({ bean, extractions, tastingProfiles, onAddExtraction, 
         
         <CardContent className="space-y-3">
           {latestExtraction ? (
-            <div className="rounded-lg p-3 space-y-2 bg-gradient-to-br from-secondary/40 via-muted/40 to-accent/10 border border-border/60">
+            <div className="rounded-lg p-3 space-y-2 bg-muted/50 border border-border/60">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Latest Grind</span>
                 <span className="font-mono font-medium">
@@ -244,9 +239,9 @@ export function BeanCard({ bean, extractions, tastingProfiles, onAddExtraction, 
           </div>
 
           {latestProfile && (
-            <div className="bg-accent/10 border border-accent/20 rounded-lg p-3">
+            <div className="bg-muted/40 border border-border/60 rounded-lg p-3">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold text-accent-foreground">Tasting Profile</span>
+                <span className="text-xs font-semibold text-foreground/80">Tasting Profile</span>
                 <FlavorProfileVisualization profile={latestProfile} compact />
               </div>
             </div>

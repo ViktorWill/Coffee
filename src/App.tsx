@@ -86,13 +86,8 @@ function App() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="relative inline-block mb-4">
-            <span className="absolute left-1/2 -top-2 -translate-x-1/2 block h-3 w-1.5 rounded-full bg-primary/30 blur-sm animate-steam" aria-hidden="true" />
-            <span className="absolute left-1/2 -top-2 -translate-x-[140%] block h-3 w-1.5 rounded-full bg-primary/20 blur-sm animate-steam animate-steam-delay-1" aria-hidden="true" />
-            <span className="absolute left-1/2 -top-2 translate-x-[40%] block h-3 w-1.5 rounded-full bg-primary/20 blur-sm animate-steam animate-steam-delay-2" aria-hidden="true" />
-            <Coffee size={56} weight="fill" className="mx-auto text-primary animate-bean-bob" />
-          </div>
-          <p className="text-muted-foreground">Brewing your beans…</p>
+          <Coffee size={48} weight="fill" className="mx-auto text-primary mb-4 animate-bean-bob" />
+          <p className="text-muted-foreground text-sm">Brewing your beans…</p>
         </div>
       </div>
     )
@@ -403,26 +398,23 @@ function AuthenticatedApp({
 
   return (
     <div className="min-h-screen">
-      <div className="container max-w-7xl mx-auto px-4 py-6 md:px-6 md:py-8">
-        <header className="mb-8">
+      <div className="container max-w-7xl mx-auto px-4 py-6 md:px-6 md:py-10">
+        <header className="mb-10">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="relative flex-shrink-0">
-                <span className="pointer-events-none absolute left-1/2 -top-3 -translate-x-1/2 block h-3 w-1.5 rounded-full bg-primary/30 blur-sm animate-steam" aria-hidden="true" />
-                <span className="pointer-events-none absolute left-1/2 -top-3 -translate-x-[160%] block h-3 w-1.5 rounded-full bg-primary/25 blur-sm animate-steam animate-steam-delay-1" aria-hidden="true" />
-                <span className="pointer-events-none absolute left-1/2 -top-3 translate-x-[60%] block h-3 w-1.5 rounded-full bg-primary/25 blur-sm animate-steam animate-steam-delay-2" aria-hidden="true" />
                 <img
                   src="https://github.com/user-attachments/assets/c32a1826-2fc6-4d70-81b2-f2d7a2eb3cf2"
                   alt="Bean Sheet logo"
-                  className="h-16 w-16 object-contain drop-shadow-sm"
+                  className="h-14 w-14 object-contain"
                 />
               </div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold mb-1 tracking-tight text-gradient-brand">
+                <h1 className="text-3xl md:text-[2.25rem] font-semibold mb-1 tracking-tight text-gradient-brand">
                   Bean Sheet
                 </h1>
-                <p className="text-muted-foreground text-sm md:text-base">
-                  Dial in your grind, chase the perfect cup ☕
+                <p className="text-muted-foreground text-sm">
+                  Dial in your grind. Chase the perfect cup.
                 </p>
               </div>
             </div>
