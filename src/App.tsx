@@ -16,7 +16,7 @@ import { AuthDialog } from '@/components/AuthDialog'
 import { UserHeader } from '@/components/UserHeader'
 import { LevelBadge } from '@/components/LevelBadge'
 import { AchievementsRow } from '@/components/AchievementsRow'
-import { BeanClickBurst } from '@/components/BeanClickBurst'
+import grinderLogo from '@/assets/minimalist_espresso_grinder.svg'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Coffee, Funnel, Plus, SortAscending, Faders, ChartLineUp, Palette, ArrowsClockwise } from '@phosphor-icons/react'
 import { ulid } from 'ulid'
@@ -404,7 +404,7 @@ function AuthenticatedApp({
             <div className="flex items-center gap-4">
               <div className="relative flex-shrink-0">
                 <img
-                  src="https://github.com/user-attachments/assets/c32a1826-2fc6-4d70-81b2-f2d7a2eb3cf2"
+                  src={grinderLogo}
                   alt="Bean Sheet logo"
                   className="h-14 w-14 object-contain"
                 />
@@ -684,7 +684,6 @@ function AuthenticatedApp({
       </AlertDialog>
 
       <Toaster position="top-center" />
-      <BeanClickBurst />
     </div>
   )
 }
