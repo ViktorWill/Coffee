@@ -3,7 +3,7 @@ import { CoffeeBean, Extraction, TastingProfile } from '@/lib/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Clock, ChartLineUp, Palette, PencilSimple, Trash, DotsThree } from '@phosphor-icons/react'
+import { Plus, Clock, ChartLineUp, Palette, PencilSimple, Trash, DotsThree, Sparkle } from '@phosphor-icons/react'
 import { formatDistanceToNow } from 'date-fns'
 import { motion } from 'framer-motion'
 import { ExtractionHistoryDialog } from '@/components/ExtractionHistoryDialog'
@@ -109,8 +109,18 @@ export function BeanCard({ bean, extractions, tastingProfiles, onAddExtraction, 
             </p>
           )}
         </CardHeader>
-        
+
         <CardContent className="space-y-3">
+          {bean.aiBrewSuggestion && (
+            <div className="rounded-lg border border-accent/30 bg-accent/5 p-3 space-y-1">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-accent">
+                <Sparkle size={14} weight="fill" />
+                AI Brew Tip
+              </div>
+              <p className="text-xs text-foreground/80 line-clamp-3">{bean.aiBrewSuggestion}</p>
+            </div>
+          )}
+
           {latestExtraction ? (
             <div className="rounded-lg p-3 space-y-2 bg-muted/50 border border-border/60">
               <div className="flex items-center justify-between text-sm">

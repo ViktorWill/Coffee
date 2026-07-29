@@ -5,6 +5,7 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
+        "dev:swa": "swa start",
         "build": "tsc -b && vite build",
         "lint": "eslint .",
         "test": "vitest run",
@@ -73,6 +74,7 @@
         "zod": "^3.25.76"
     },
     "devDependencies": {
+        "@azure/static-web-apps-cli": "^2.0.10",
         "@eslint/js": "^9.21.0",
         "@tailwindcss/postcss": "^4.1.8",
         "@types/react": "^19.0.10",

@@ -52,7 +52,7 @@ function App() {
           const data = await res.json()
           if (data.clientPrincipal) {
             setCurrentUserId(data.clientPrincipal.userId)
-            setCurrentUsername(data.clientPrincipal.userDetails)
+            setCurrentUsername(data.clientPrincipal.userDetails || data.clientPrincipal.userId)
             setAuthDialogOpen(false)
           } else {
             setAuthDialogOpen(true)

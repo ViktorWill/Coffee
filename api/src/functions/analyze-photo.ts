@@ -8,7 +8,7 @@ app.http('analyze-photo', {
     try {
       const endpoint = process.env.AZURE_OPENAI_ENDPOINT
       const apiKey = process.env.AZURE_OPENAI_KEY
-      const deployment = process.env.AZURE_OPENAI_DEPLOYMENT || 'gpt-4o'
+      const deployment = process.env.AZURE_OPENAI_DEPLOYMENT || 'gpt-5-mini'
 
       if (!endpoint || !apiKey) {
         return {
@@ -43,8 +43,7 @@ app.http('analyze-photo', {
         },
         body: JSON.stringify({
           messages,
-          max_tokens: 1000,
-          temperature: 0.3,
+          max_completion_tokens: 4000,
         }),
       })
 

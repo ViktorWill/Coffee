@@ -38,6 +38,8 @@ export interface CoffeeBean {
   origin?: string
   altitude?: string
   roastLevel?: string
+  aiPredictedTaste?: string
+  aiBrewSuggestion?: string
   createdAt: number
   archived?: boolean
 }

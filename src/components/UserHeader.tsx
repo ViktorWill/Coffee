@@ -16,12 +16,14 @@ interface UserHeaderProps {
 }
 
 export function UserHeader({ username, onSignOut }: UserHeaderProps) {
-  const initials = username
+  const displayName = username || 'Coffee Lover'
+  const initials = displayName
     .split(' ')
+    .filter(Boolean)
     .map((n) => n[0])
     .join('')
     .toUpperCase()
-    .slice(0, 2)
+    .slice(0, 2) || '?'
 
   return (
     <DropdownMenu>
@@ -32,13 +34,13 @@ export function UserHeader({ username, onSignOut }: UserHeaderProps) {
               {initials}
             </AvatarFallback>
           </Avatar>
-          <span className="text-sm font-medium hidden sm:inline-block">{username}</span>
+          <span className="text-sm font-medium hidden sm:inline-block">{displayName}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium">{username}</p>
+            <p className="text-sm font-medium">{displayName}</p>
             <p className="text-xs text-muted-foreground">Coffee Enthusiast</p>
           </div>
         </DropdownMenuLabel>

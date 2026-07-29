@@ -5,9 +5,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Upload, Spinner } from '@phosphor-icons/react'
+import { Upload, Spinner, Sparkle } from '@phosphor-icons/react'
 import { CoffeeBean, CoffeeType } from '@/lib/types'
 import { COFFEE_ORIGINS, ALTITUDE_RANGES, ROAST_LEVELS } from '@/lib/constants'
+import { parseLlmJson } from '@/lib/utils'
 import { toast } from 'sonner'
 
 interface NewBeanDialogProps {
@@ -26,6 +27,8 @@ export function NewBeanDialog({ open, onOpenChange, coffeeType, onSave }: NewBea
   const [origin, setOrigin] = useState('')
   const [altitude, setAltitude] = useState('')
   const [roastLevel, setRoastLevel] = useState('')
+  const [aiPredictedTaste, setAiPredictedTaste] = useState('')
+  const [aiBrewSuggestion, setAiBrewSuggestion] = useState('')
 
   const compressImage = (base64Image: string, maxWidth: number = 800): Promise<string> => {
     return new Promise((resolve) => {
@@ -66,34 +69,53 @@ export function NewBeanDialog({ open, onOpenChange, coffeeType, onSave }: NewBea
       
       setIsAnalyzing(true)
       try {
-        const prompt = spark.llmPrompt`You are analyzing a coffee package photo. Extract the following information from the image:
+        const brewTarget = coffeeType === 'espresso'
+          ? 'espresso (dose in grams, brew ratio like 1:2, shot time in seconds, water temp)'
+          : 'filter/pour-over (coffee-to-water ratio like 1:16, grind size, total brew time, water temp)'
+
+        const prompt = spark.llmPrompt`You are a coffee expert analyzing a coffee package photo for someone about to brew it as ${brewTarget}. Extract the following information from the image:
 - Coffee name/brand
-- Blend type (e.g., "Single Origin Ethiopia", "House Blend", "Dark Roast")  
+- Blend type (e.g., "Single Origin Ethiopia", "House Blend", "Dark Roast")
 - Taste notes/flavor profile (any tasting notes mentioned on the package)
 - Origin/Region (e.g., "Ethiopia", "Colombia", "Kenya")
 - Altitude (e.g., "1500m", "1200-1800 masl")
 - Roast level (e.g., "Light", "Medium", "Dark", "Medium-Dark")
 
-Return ONLY a JSON object with these exact keys: "name", "blend", "tasteNotes", "origin", "altitude", "roastLevel". If you cannot find information, use empty strings.
+Then, using what's on the package plus your general knowledge of that origin/altitude/roast combination, add:
+- predictedTaste: a short paragraph (2-3 sentences) predicting the likely flavor, acidity, body and mouthfeel of this coffee
+- brewSuggestion: a short paragraph (2-3 sentences) with a concrete starting-point brew recipe for ${coffeeType === 'espresso' ? 'espresso' : 'filter/pour-over'}, tuned to the roast level and origin (e.g. lighter/higher-altitude beans often want a finer grind and hotter water, darker roasts often want coarser grind and slightly cooler water)
+
+Return ONLY a JSON object with these exact keys: "name", "blend", "tasteNotes", "origin", "altitude", "roastLevel", "predictedTaste", "brewSuggestion". If you cannot find label information, use empty strings, but always attempt predictedTaste and brewSuggestion from what you can infer.
 
 Example response format:
-{"name": "Blue Bottle Giant Steps", "blend": "Single Origin Ethiopia", "tasteNotes": "Blueberry, chocolate, floral notes", "origin": "Ethiopia Yirgacheffe", "altitude": "1800-2200 masl", "roastLevel": "Light"}
+{"name": "Blue Bottle Giant Steps", "blend": "Single Origin Ethiopia", "tasteNotes": "Blueberry, chocolate, floral notes", "origin": "Ethiopia Yirgacheffe", "altitude": "1800-2200 masl", "roastLevel": "Light", "predictedTaste": "Expect bright, juicy acidity with blueberry and floral notes up front, a light body, and a clean, tea-like finish typical of washed Yirgacheffe.", "brewSuggestion": "Start with a fine-medium grind, water just off the boil (~96°C), and a 1:2.2 ratio over 27-30 seconds to bring out the fruit without tipping sour."}
 
 Important: Return ONLY the JSON object, no other text.`
 
-        const result = await spark.llm(prompt, 'gpt-4o', base64Image)
-        const parsed = JSON.parse(result)
-        
+        const result = await spark.llm(prompt, 'gpt-5-mini', base64Image)
+        const parsed = parseLlmJson<{
+          name?: string
+          blend?: string
+          tasteNotes?: string
+          origin?: string
+          altitude?: string
+          roastLevel?: string
+          predictedTaste?: string
+          brewSuggestion?: string
+        }>(result)
+
         const compressedImage = await compressImage(base64Image)
         setPhotoUrl(compressedImage)
-        
+
         if (parsed.name) setName(parsed.name)
         if (parsed.blend) setBlend(parsed.blend)
         if (parsed.tasteNotes) setTasteNotes(parsed.tasteNotes)
         if (parsed.origin) setOrigin(parsed.origin)
         if (parsed.altitude) setAltitude(parsed.altitude)
         if (parsed.roastLevel) setRoastLevel(parsed.roastLevel)
-        
+        if (parsed.predictedTaste) setAiPredictedTaste(parsed.predictedTaste)
+        if (parsed.brewSuggestion) setAiBrewSuggestion(parsed.brewSuggestion)
+
         toast.success('Coffee info extracted successfully!')
       } catch (error) {
         console.error('Analysis error:', error)
@@ -122,6 +144,8 @@ Important: Return ONLY the JSON object, no other text.`
       origin: origin.trim() || undefined,
       altitude: altitude.trim() || undefined,
       roastLevel: roastLevel.trim() || undefined,
+      aiPredictedTaste: aiPredictedTaste.trim() || undefined,
+      aiBrewSuggestion: aiBrewSuggestion.trim() || undefined,
     })
 
     setPhotoUrl('')
@@ -131,6 +155,8 @@ Important: Return ONLY the JSON object, no other text.`
     setOrigin('')
     setAltitude('')
     setRoastLevel('')
+    setAiPredictedTaste('')
+    setAiBrewSuggestion('')
     onOpenChange(false)
   }
 
@@ -164,6 +190,8 @@ Important: Return ONLY the JSON object, no other text.`
                       setOrigin('')
                       setAltitude('')
                       setRoastLevel('')
+                      setAiPredictedTaste('')
+                      setAiBrewSuggestion('')
                     }}
                   >
                     Remove Photo
@@ -200,6 +228,27 @@ Important: Return ONLY the JSON object, no other text.`
               )}
             </div>
           </div>
+
+          {(aiPredictedTaste || aiBrewSuggestion) && (
+            <div className="rounded-lg border border-accent/30 bg-accent/5 p-4 space-y-3">
+              <div className="flex items-center gap-2 text-sm font-semibold text-accent">
+                <Sparkle size={16} weight="fill" />
+                AI Suggestions
+              </div>
+              {aiPredictedTaste && (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Predicted Taste</p>
+                  <p className="text-sm text-foreground/80">{aiPredictedTaste}</p>
+                </div>
+              )}
+              {aiBrewSuggestion && (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Brew Suggestion</p>
+                  <p className="text-sm text-foreground/80">{aiBrewSuggestion}</p>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="name">Coffee Name *</Label>
