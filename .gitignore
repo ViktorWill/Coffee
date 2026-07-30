@@ -37,3 +37,9 @@ pids
 local.settings.json
 .swa/
 
+# La Marzocco reference tool — credentials and registered key material
+tools/lamarzocco/.venv/
+tools/lamarzocco/.env
+tools/lamarzocco/installation_key.json
+tools/lamarzocco/python_expected.json
+
