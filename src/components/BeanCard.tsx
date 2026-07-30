@@ -8,6 +8,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { motion } from 'framer-motion'
 import { ExtractionHistoryDialog } from '@/components/ExtractionHistoryDialog'
 import { FlavorProfileVisualization } from '@/components/FlavorProfileVisualization'
+import { MachineDialIn } from '@/components/MachineDialIn'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -120,6 +121,9 @@ export function BeanCard({ bean, extractions, tastingProfiles, onAddExtraction, 
               <p className="text-xs text-foreground/80 line-clamp-3">{bean.aiBrewSuggestion}</p>
             </div>
           )}
+
+          <MachineDialIn bean={bean} />
+
 
           {latestExtraction ? (
             <div className="rounded-lg p-3 space-y-2 bg-muted/50 border border-border/60">

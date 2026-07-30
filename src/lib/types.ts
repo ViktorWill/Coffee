@@ -40,6 +40,8 @@ export interface CoffeeBean {
   roastLevel?: string
   aiPredictedTaste?: string
   aiBrewSuggestion?: string
+  /** Coffee boiler setpoint for this bean, in °C. Pushed to the machine on demand. */
+  brewTempC?: number
   createdAt: number
   archived?: boolean
 }
