@@ -23,7 +23,18 @@ function triggerReauth(): void {
   })
 }
 
-async function persistWithRetry(key: string, value: unknown): Promise<boolean> {
+type PersistResult = { ok: true } | { ok: false; reason?: string; silent?: boolean }
+
+async function readErrorMessage(res: Response): Promise<string | undefined> {
+  try {
+    const data = await res.json()
+    return typeof data?.error === 'string' ? data.error : undefined
+  } catch {
+    return undefined
+  }
+}
+
+async function persistWithRetry(key: string, value: unknown): Promise<PersistResult> {
   let lastError: unknown = null
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
@@ -32,12 +43,18 @@ async function persistWithRetry(key: string, value: unknown): Promise<boolean> {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ key, value }),
       })
-      if (res.ok) return true
-      if (res.status === 401) {
+      if (res.ok) return { ok: true }
+      if (res.status === 401 || res.status === 403) {
         triggerReauth()
-        return false
+        return { ok: false, silent: true }
       }
-      lastError = new Error(`HTTP ${res.status}`)
+      const serverMessage = await readErrorMessage(res)
+      lastError = new Error(serverMessage ? `HTTP ${res.status}: ${serverMessage}` : `HTTP ${res.status}`)
+      // 4xx responses (other than throttling) won't succeed on retry.
+      if (res.status >= 400 && res.status < 500 && res.status !== 408 && res.status !== 429) {
+        console.error(`useKV: Failed to persist key "${key}":`, lastError)
+        return { ok: false, reason: serverMessage }
+      }
     } catch (error) {
       lastError = error
     }
@@ -46,10 +63,8 @@ async function persistWithRetry(key: string, value: unknown): Promise<boolean> {
       await new Promise((r) => setTimeout(r, 200 * Math.pow(2, attempt)))
     }
   }
-  if (import.meta.env.DEV) {
-    console.error(`useKV: Failed to persist key "${key}" after ${MAX_RETRIES} attempts:`, lastError)
-  }
-  return false
+  console.error(`useKV: Failed to persist key "${key}" after ${MAX_RETRIES} attempts:`, lastError)
+  return { ok: false, reason: lastError instanceof Error ? lastError.message : undefined }
 }
 
 export function useKV<T>(
@@ -104,8 +119,8 @@ export function useKV<T>(
       if (debounceTimerRef.current !== null) {
         clearTimeout(debounceTimerRef.current)
         debounceTimerRef.current = null
-        const ok = await persistWithRetry(key, valueRef.current)
-        if (ok) {
+        const result = await persistWithRetry(key, valueRef.current)
+        if (result.ok) {
           try { localStorage.removeItem(RECOVERY_PREFIX + key) } catch { /* ignore */ }
         }
       }
@@ -146,8 +161,8 @@ export function useKV<T>(
         debounceTimerRef.current = null
         const flushKey = key
         const flushValue = valueRef.current
-        void persistWithRetry(flushKey, flushValue).then((ok) => {
-          if (ok) {
+        void persistWithRetry(flushKey, flushValue).then((result) => {
+          if (result.ok) {
             try { localStorage.removeItem(RECOVERY_PREFIX + flushKey) } catch { /* ignore */ }
           }
         })
@@ -169,11 +184,11 @@ export function useKV<T>(
     debounceTimerRef.current = setTimeout(() => {
       debounceTimerRef.current = null
       const valueToPersist = valueRef.current
-      void persistWithRetry(key, valueToPersist).then((ok) => {
-        if (ok) {
+      void persistWithRetry(key, valueToPersist).then((result) => {
+        if (result.ok) {
           try { localStorage.removeItem(RECOVERY_PREFIX + key) } catch { /* ignore */ }
-        } else {
-          toast.error("Couldn't save your changes. We'll keep retrying.", {
+        } else if (!result.silent) {
+          toast.error(result.reason ?? "Couldn't save your changes. Check your connection and try again.", {
             id: `usekv-save-failed:${key}`,
           })
         }
