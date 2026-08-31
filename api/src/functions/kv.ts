@@ -1,6 +1,10 @@
 import { app, HttpRequest, HttpResponseInit } from '@azure/functions'
 import { CosmosClient } from '@azure/cosmos'
 
+// Cosmos DB hard-limits a single item to 2 MB; leave headroom for the
+// document envelope (id, partition key, system properties).
+const MAX_ITEM_BYTES = 1_800_000
+
 let container: any = null
 
 function getContainer() {
@@ -47,6 +51,17 @@ app.http('kv', {
         if (!body.key) {
           return { status: 400, jsonBody: { error: 'Missing key in body' } }
         }
+        // Cosmos DB rejects items larger than 2 MB. Fail fast with a clear,
+        // actionable message instead of surfacing an opaque 500.
+        const serializedSize = Buffer.byteLength(JSON.stringify(body.value ?? null), 'utf8')
+        if (serializedSize > MAX_ITEM_BYTES) {
+          return {
+            status: 413,
+            jsonBody: {
+              error: `Data for "${body.key}" is too large to store (${Math.round(serializedSize / 1024)} KB, limit ${Math.round(MAX_ITEM_BYTES / 1024)} KB). Remove or shrink some photos.`,
+            },
+          }
+        }
         await c.items.upsert({
           id: body.key,
           partitionKey: body.key,
@@ -71,7 +86,12 @@ app.http('kv', {
       return { status: 405, jsonBody: { error: 'Method not allowed' } }
     } catch (error: any) {
       console.error('KV API error:', error)
-      return { status: 500, jsonBody: { error: error.message || 'Internal server error' } }
+      // Surface Cosmos client errors (413 too large, 429 throttled, ...) so the
+      // browser can tell the user what actually went wrong.
+      const status = typeof error?.code === 'number' && error.code >= 400 && error.code < 600
+        ? error.code
+        : 500
+      return { status, jsonBody: { error: error.message || 'Internal server error' } }
     }
   },
 })

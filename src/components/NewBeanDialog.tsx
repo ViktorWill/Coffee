@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Upload, Spinner, Sparkle } from '@phosphor-icons/react'
 import { CoffeeBean, CoffeeType } from '@/lib/types'
 import { COFFEE_ORIGINS, ALTITUDE_RANGES, ROAST_LEVELS } from '@/lib/constants'
-import { parseLlmJson } from '@/lib/utils'
+import { compressImage, parseLlmJson } from '@/lib/utils'
 import { toast } from 'sonner'
 
 interface NewBeanDialogProps {
@@ -29,30 +29,6 @@ export function NewBeanDialog({ open, onOpenChange, coffeeType, onSave }: NewBea
   const [roastLevel, setRoastLevel] = useState('')
   const [aiPredictedTaste, setAiPredictedTaste] = useState('')
   const [aiBrewSuggestion, setAiBrewSuggestion] = useState('')
-
-  const compressImage = (base64Image: string, maxWidth: number = 800): Promise<string> => {
-    return new Promise((resolve) => {
-      const img = new Image()
-      img.onload = () => {
-        const canvas = document.createElement('canvas')
-        let width = img.width
-        let height = img.height
-
-        if (width > maxWidth) {
-          height = (height * maxWidth) / width
-          width = maxWidth
-        }
-
-        canvas.width = width
-        canvas.height = height
-        const ctx = canvas.getContext('2d')
-        ctx?.drawImage(img, 0, 0, width, height)
-        
-        resolve(canvas.toDataURL('image/jpeg', 0.7))
-      }
-      img.src = base64Image
-    })
-  }
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -119,8 +95,11 @@ Important: Return ONLY the JSON object, no other text.`
         toast.success('Coffee info extracted successfully!')
       } catch (error) {
         console.error('Analysis error:', error)
-        const compressedImage = await compressImage(base64Image)
-        setPhotoUrl(compressedImage)
+        try {
+          setPhotoUrl(await compressImage(base64Image))
+        } catch (compressError) {
+          console.error('Image compression error:', compressError)
+        }
         toast.error('Could not analyze image. Please enter details manually.')
       } finally {
         setIsAnalyzing(false)
