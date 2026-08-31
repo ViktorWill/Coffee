@@ -3,7 +3,7 @@ import { CosmosClient } from '@azure/cosmos'
 
 // Cosmos DB hard-limits a single item to 2 MB; leave headroom for the
 // document envelope (id, partition key, system properties).
-const MAX_ITEM_BYTES = 1_800_000
+const MAX_ITEM_BYTES = 2_000_000
 
 let container: any = null
 
