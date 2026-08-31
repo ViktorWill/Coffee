@@ -14,6 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 
 interface BeanCardProps {
   bean: CoffeeBean
@@ -27,6 +28,7 @@ interface BeanCardProps {
 
 export function BeanCard({ bean, extractions, tastingProfiles, onAddExtraction, onCreateTastingProfile, onEdit, onDelete }: BeanCardProps) {
   const [historyOpen, setHistoryOpen] = useState(false)
+  const [photoPreviewOpen, setPhotoPreviewOpen] = useState(false)
   
   const latestExtraction = extractions.length > 0 
     ? extractions.sort((a, b) => b.timestamp - a.timestamp)[0]
@@ -48,7 +50,7 @@ export function BeanCard({ bean, extractions, tastingProfiles, onAddExtraction, 
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2 mb-1">
-                <CardTitle className="text-xl font-semibold truncate flex-1">
+                <CardTitle className="text-xl font-semibold truncate max-w-[70%] sm:max-w-none">
                   {bean.name}
                 </CardTitle>
                 <DropdownMenu>
@@ -96,11 +98,18 @@ export function BeanCard({ bean, extractions, tastingProfiles, onAddExtraction, 
               </div>
             </div>
             {bean.photoUrl && (
-              <img 
-                src={bean.photoUrl} 
-                alt={bean.name}
-                className="w-16 h-16 rounded-md object-cover flex-shrink-0"
-              />
+              <button
+                type="button"
+                onClick={() => setPhotoPreviewOpen(true)}
+                className="flex-shrink-0 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label={`View larger photo of ${bean.name}`}
+              >
+                <img 
+                  src={bean.photoUrl} 
+                  alt={bean.name}
+                  className="w-16 h-16 rounded-md object-cover flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity"
+                />
+              </button>
             )}
           </div>
           {bean.tasteNotes && (
@@ -272,6 +281,19 @@ export function BeanCard({ bean, extractions, tastingProfiles, onAddExtraction, 
         bean={bean}
         extractions={extractions}
       />
+
+      {bean.photoUrl && (
+        <Dialog open={photoPreviewOpen} onOpenChange={setPhotoPreviewOpen}>
+          <DialogContent className="max-w-[calc(100%-2rem)] sm:max-w-2xl p-2">
+            <DialogTitle className="sr-only">{bean.name} photo</DialogTitle>
+            <img
+              src={bean.photoUrl}
+              alt={bean.name}
+              className="w-full max-h-[80vh] rounded-lg object-contain"
+            />
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   )
 }
