@@ -67,15 +67,28 @@ async function persistWithRetry(key: string, value: unknown): Promise<PersistRes
   return { ok: false, reason: lastError instanceof Error ? lastError.message : undefined }
 }
 
+export interface UseKVCodec<T> {
+  // Transform the in-memory (rich) value into the compact shape actually sent
+  // to the server. Used e.g. to split large embedded data (like photos) out
+  // into their own KV entries so the main document stays small.
+  serialize?: (value: T) => T | Promise<T>
+  // Reverse of serialize: rehydrate a value fetched from the server back into
+  // its rich in-memory shape before it's exposed to consumers.
+  deserialize?: (value: T) => T | Promise<T>
+}
+
 export function useKV<T>(
   key: string,
-  defaultValue: T
+  defaultValue: T,
+  codec?: UseKVCodec<T>
 ): [T, (value: SetValueFn<T>) => void, boolean] {
   const [value, setValueState] = useState<T>(defaultValue)
   const [isLoading, setIsLoading] = useState(true)
   const valueRef = useRef<T>(defaultValue)
   const dirtyRef = useRef(false)
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const codecRef = useRef<UseKVCodec<T> | undefined>(codec)
+  codecRef.current = codec
 
   // Fetch initial value from API. If a local write happens before the GET
   // resolves, the response is discarded (dirtyRef) so we don't clobber user data.
@@ -96,8 +109,11 @@ export function useKV<T>(
         const data = await res.json()
         if (cancelled || dirtyRef.current) return
         if (data.value !== undefined && data.value !== null) {
-          setValueState(data.value as T)
-          valueRef.current = data.value as T
+          const deserialize = codecRef.current?.deserialize
+          const hydrated = deserialize ? await deserialize(data.value as T) : (data.value as T)
+          if (cancelled || dirtyRef.current) return
+          setValueState(hydrated)
+          valueRef.current = hydrated
         }
       } catch (error) {
         if (import.meta.env.DEV) {
@@ -119,7 +135,9 @@ export function useKV<T>(
       if (debounceTimerRef.current !== null) {
         clearTimeout(debounceTimerRef.current)
         debounceTimerRef.current = null
-        const result = await persistWithRetry(key, valueRef.current)
+        const serialize = codecRef.current?.serialize
+        const toPersist = serialize ? await serialize(valueRef.current) : valueRef.current
+        const result = await persistWithRetry(key, toPersist)
         if (result.ok) {
           try { localStorage.removeItem(RECOVERY_PREFIX + key) } catch { /* ignore */ }
         }
@@ -137,8 +155,11 @@ export function useKV<T>(
         const data = await res.json()
         if (cancelled || dirtyRef.current) return
         if (data.value !== undefined && data.value !== null) {
-          setValueState(data.value as T)
-          valueRef.current = data.value as T
+          const deserialize = codecRef.current?.deserialize
+          const hydrated = deserialize ? await deserialize(data.value as T) : (data.value as T)
+          if (cancelled || dirtyRef.current) return
+          setValueState(hydrated)
+          valueRef.current = hydrated
         }
       } catch (error) {
         if (import.meta.env.DEV) {
@@ -161,11 +182,14 @@ export function useKV<T>(
         debounceTimerRef.current = null
         const flushKey = key
         const flushValue = valueRef.current
-        void persistWithRetry(flushKey, flushValue).then((result) => {
+        const serialize = codecRef.current?.serialize
+        void (async () => {
+          const toPersist = serialize ? await serialize(flushValue) : flushValue
+          const result = await persistWithRetry(flushKey, toPersist)
           if (result.ok) {
             try { localStorage.removeItem(RECOVERY_PREFIX + flushKey) } catch { /* ignore */ }
           }
-        })
+        })()
       }
     }
   }, [key])
@@ -184,7 +208,10 @@ export function useKV<T>(
     debounceTimerRef.current = setTimeout(() => {
       debounceTimerRef.current = null
       const valueToPersist = valueRef.current
-      void persistWithRetry(key, valueToPersist).then((result) => {
+      void (async () => {
+        const serialize = codecRef.current?.serialize
+        const persistedValue = serialize ? await serialize(valueToPersist) : valueToPersist
+        const result = await persistWithRetry(key, persistedValue)
         if (result.ok) {
           try { localStorage.removeItem(RECOVERY_PREFIX + key) } catch { /* ignore */ }
         } else if (!result.silent) {
@@ -192,7 +219,7 @@ export function useKV<T>(
             id: `usekv-save-failed:${key}`,
           })
         }
-      })
+      })()
     }, DEBOUNCE_MS)
   }, [key])
 
