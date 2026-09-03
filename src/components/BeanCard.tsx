@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { BeanDetailsDialog } from '@/components/BeanDetailsDialog'
 
 interface BeanCardProps {
   bean: CoffeeBean
@@ -29,13 +30,14 @@ interface BeanCardProps {
 export function BeanCard({ bean, extractions, tastingProfiles, onAddExtraction, onCreateTastingProfile, onEdit, onDelete }: BeanCardProps) {
   const [historyOpen, setHistoryOpen] = useState(false)
   const [photoPreviewOpen, setPhotoPreviewOpen] = useState(false)
+  const [detailsOpen, setDetailsOpen] = useState(false)
   
   const latestExtraction = extractions.length > 0 
-    ? extractions.sort((a, b) => b.timestamp - a.timestamp)[0]
+    ? [...extractions].sort((a, b) => b.timestamp - a.timestamp)[0]
     : null
   
   const latestProfile = tastingProfiles.length > 0
-    ? tastingProfiles.sort((a, b) => b.timestamp - a.timestamp)[0]
+    ? [...tastingProfiles].sort((a, b) => b.timestamp - a.timestamp)[0]
     : null
 
   return (
@@ -46,12 +48,19 @@ export function BeanCard({ bean, extractions, tastingProfiles, onAddExtraction, 
         transition={{ duration: 0.25, ease: 'easeOut' }}
       >
         <Card className="card-elevated overflow-hidden hover:border-foreground/20 transition-colors duration-200">
-        <CardHeader className="pb-3">
-          <div className="flex items-start justify-between gap-3">
+        <CardHeader className="pb-3 grid-cols-1">
+          <div className="flex items-start justify-between gap-3 min-w-0">
             <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2 mb-1">
-                <CardTitle className="text-xl font-semibold truncate max-w-[70%] sm:max-w-none">
-                  {bean.name}
+              <div className="flex items-start justify-between gap-2 mb-1 min-w-0">
+                <CardTitle className="min-w-0 flex-1">
+                  <button
+                    type="button"
+                    onClick={() => setDetailsOpen(true)}
+                    className="block w-full text-left text-xl font-semibold break-words rounded-sm hover:text-accent transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    aria-label={`Show details for ${bean.name}`}
+                  >
+                    {bean.name}
+                  </button>
                 </CardTitle>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -75,7 +84,7 @@ export function BeanCard({ bean, extractions, tastingProfiles, onAddExtraction, 
                 </DropdownMenu>
               </div>
               {bean.blend && (
-                <p className="text-sm text-muted-foreground mb-1">
+                <p className="text-sm text-muted-foreground mb-1 break-words">
                   {bean.blend}
                 </p>
               )}
@@ -113,7 +122,7 @@ export function BeanCard({ bean, extractions, tastingProfiles, onAddExtraction, 
             )}
           </div>
           {bean.tasteNotes && (
-            <p className="text-sm text-foreground/70 line-clamp-2 mt-2">
+            <p className="text-sm text-foreground/70 line-clamp-2 mt-2 break-words">
               {bean.tasteNotes}
             </p>
           )}
@@ -126,7 +135,7 @@ export function BeanCard({ bean, extractions, tastingProfiles, onAddExtraction, 
                 <Sparkle size={14} weight="fill" />
                 AI Brew Tip
               </div>
-              <p className="text-xs text-foreground/80 line-clamp-3">{bean.aiBrewSuggestion}</p>
+              <p className="text-xs text-foreground/80 line-clamp-3 break-words">{bean.aiBrewSuggestion}</p>
             </div>
           )}
 
@@ -274,6 +283,17 @@ export function BeanCard({ bean, extractions, tastingProfiles, onAddExtraction, 
         </CardContent>
       </Card>
       </motion.div>
+
+      <BeanDetailsDialog
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+        bean={bean}
+        extractions={extractions}
+        tastingProfiles={tastingProfiles}
+        onEdit={onEdit}
+        onAddExtraction={onAddExtraction}
+        onCreateTastingProfile={onCreateTastingProfile}
+      />
 
       <ExtractionHistoryDialog
         open={historyOpen}
