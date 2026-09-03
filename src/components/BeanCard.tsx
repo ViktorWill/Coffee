@@ -33,11 +33,11 @@ export function BeanCard({ bean, extractions, tastingProfiles, onAddExtraction, 
   const [detailsOpen, setDetailsOpen] = useState(false)
   
   const latestExtraction = extractions.length > 0 
-    ? extractions.sort((a, b) => b.timestamp - a.timestamp)[0]
+    ? [...extractions].sort((a, b) => b.timestamp - a.timestamp)[0]
     : null
   
   const latestProfile = tastingProfiles.length > 0
-    ? tastingProfiles.sort((a, b) => b.timestamp - a.timestamp)[0]
+    ? [...tastingProfiles].sort((a, b) => b.timestamp - a.timestamp)[0]
     : null
 
   return (
