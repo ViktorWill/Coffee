@@ -2,7 +2,6 @@ import { CoffeeBean, Extraction, TastingProfile } from '@/lib/types'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { PencilSimple, Sparkle, Plus, Palette } from '@phosphor-icons/react'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -40,13 +39,12 @@ export function BeanDetailsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[calc(100%-2rem)] sm:max-w-lg max-h-[85vh] flex flex-col">
+      <DialogContent className="max-w-[calc(100%-2rem)] sm:max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader className="text-left">
           <DialogTitle className="break-words pr-6">{bean.name}</DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 -mx-6 px-6">
-          <div className="space-y-4 pb-1">
+        <div className="space-y-4 pb-1">
             {bean.photoUrl && (
               <img
                 src={bean.photoUrl}
@@ -119,8 +117,7 @@ export function BeanDetailsDialog({
                 </span>
               </div>
             </div>
-          </div>
-        </ScrollArea>
+        </div>
 
         <div className="flex flex-wrap gap-2 pt-2">
           <Button onClick={() => handleAction(onEdit)} className="flex-1 gap-2">

@@ -3,7 +3,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { CoffeeBean, Extraction, TasteNote } from '@/lib/types'
 import { getAdvisorRecommendation, TASTE_NOTE_LABELS } from '@/lib/advisor'
@@ -164,7 +163,7 @@ export function ExtractionHistoryDialog({
           </div>
         )}
 
-        <ScrollArea className="flex-1 px-6">
+        <div className="min-h-0 flex-1 overflow-y-auto px-6">
           <div className="space-y-3 py-4">
             {viewType === 'charts' ? (
               <ExtractionChart extractions={extractions} beanType={bean.type} />
@@ -403,7 +402,7 @@ export function ExtractionHistoryDialog({
             )
             )}
           </div>
-        </ScrollArea>
+        </div>
 
         <div className="px-6 py-4 border-t">
           <Button
