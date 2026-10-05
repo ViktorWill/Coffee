@@ -19,9 +19,13 @@ What real hardware taught us, beyond what mocks could:
 - **There is no live boiler temperature.** `CMCoffeeBoiler` exposes the setpoint
   and a coarse `status` (`Ready`/`HeatingUp`/…), so `currentTemperature` is
   always null on this model.
-- **Shot history is unavailable on this machine**: `shotCounterSupported: false`
-  and `lastCoffee: null`, which rules out auto-populating extractions from the
-  machine despite the gateway having a shot timer.
+- **Shot history IS available — but not where you'd expect.** The dashboard is
+  misleading here: it reports `shotCounterSupported: false` and a null
+  `lastCoffee` even though `/things/{serial}/stats/LAST_COFFEE/1?days=N` returns
+  full history (time, extraction seconds, target temperature, validity). Don't
+  trust those two dashboard fields as a capability check.
+- **Shots carry no yield.** `doseValue` is null without a paired brew-by-weight
+  scale, so grams come from the user.
 
 `GET /api/machine?raw=1` still dumps the unparsed dashboard if the shape ever
 needs re-checking.
@@ -98,8 +102,21 @@ Key Vault keyed by the SWA principal id, and nothing else needs to change.
 | Method | Route | Body |
 |---|---|---|
 | `GET` | `/api/machine` | — (`?raw=1` includes the raw dashboard) |
+| `GET` | `/api/machine/shots` | — (`?days=N`, 1–90, default 14) |
 | `POST` | `/api/machine/power` | `{ "enabled": boolean }` |
 | `POST` | `/api/machine/temperature` | `{ "targetTemperature": number }` |
+
+## Importing brews
+
+`/api/machine/shots` returns what the machine recorded — when a shot ran and for
+how long — but not which bean, grind or yield. The import dialog therefore asks
+for the bean explicitly and takes grind and yield by hand; nothing is inferred.
+
+Imported extractions keep the machine's own timestamp rather than the moment they
+were logged, so the history reflects when shots were actually pulled. Imported
+shot times are recorded under `<user>:imported-shot-times` so the same shot isn't
+offered twice, and the dialog renders nothing until that list has loaded —
+otherwise already-logged shots flash up briefly and can be double-logged.
 
 Temperature is validated against the machine's own reported min/max, falling back
 to a conservative 85–96°C when the dashboard hasn't been read.

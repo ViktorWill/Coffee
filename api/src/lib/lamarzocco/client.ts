@@ -60,6 +60,27 @@ export interface CommandAccepted {
   commandId: string | null
 }
 
+/** A shot as the stats endpoint reports it. */
+export interface RawShot {
+  /** Epoch milliseconds. */
+  time: number
+  extractionSeconds: number
+  doseMode?: string
+  doseIndex?: string
+  /** Yield in grams — null without a paired brew-by-weight scale. */
+  doseValue?: number | null
+  doseValueNumerator?: number | null
+  targetTemperature?: number | null
+  /** The machine flags aborted or otherwise unusable shots. */
+  valid?: boolean
+  invalidReason?: string | null
+}
+
+export interface CoffeeCounters {
+  totalCoffee: number
+  totalFlush: number
+}
+
 interface StoredToken {
   accessToken: string
   refreshToken: string
@@ -189,6 +210,32 @@ export class LaMarzoccoClient {
 
   getSettings(serialNumber: string): Promise<Record<string, unknown>> {
     return this.restCall(`/things/${serialNumber}/settings`)
+  }
+
+  /**
+   * Recent shots, newest first.
+   *
+   * Lives under the stats widgets rather than the dashboard — note that the
+   * dashboard's own `lastCoffee` field and `shotCounterSupported` flag are both
+   * unreliable indicators here: a Linea Mini R reports `shotCounterSupported:
+   * false` and a null `lastCoffee` while still returning full history from this
+   * endpoint.
+   *
+   * `doseValue` is null unless a brew-by-weight scale is paired, so yield in
+   * grams generally has to come from the user.
+   */
+  async getLastCoffee(serialNumber: string, days = 14): Promise<RawShot[]> {
+    const result = await this.restCall<{ output?: { lastCoffees?: RawShot[] } }>(
+      `/things/${serialNumber}/stats/LAST_COFFEE/1?days=${days}`,
+    )
+    return result?.output?.lastCoffees ?? []
+  }
+
+  async getCoffeeAndFlushCounter(serialNumber: string): Promise<CoffeeCounters> {
+    const result = await this.restCall<{ output?: CoffeeCounters }>(
+      `/things/${serialNumber}/stats/COFFEE_AND_FLUSH_COUNTER/1`,
+    )
+    return result?.output ?? { totalCoffee: 0, totalFlush: 0 }
   }
 
   /**

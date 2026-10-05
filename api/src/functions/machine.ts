@@ -17,6 +17,7 @@ import { app, HttpRequest, HttpResponseInit } from '@azure/functions'
 import {
   assertTemperatureInRange,
   getMachineStatus,
+  getRecentShots,
   setCoffeeTemperature,
   setMachinePower,
 } from '../lib/lamarzocco/service.js'
@@ -58,6 +59,23 @@ app.http('machine-status', {
       // against the real machine.
       const includeRaw = request.query.get('raw') === '1'
       return { jsonBody: await getMachineStatus(getUserId(request), includeRaw) }
+    } catch (error) {
+      return errorResponse(error)
+    }
+  },
+})
+
+app.http('machine-shots', {
+  methods: ['GET'],
+  authLevel: 'anonymous',
+  route: 'machine/shots',
+  handler: async (request: HttpRequest): Promise<HttpResponseInit> => {
+    try {
+      const requested = Number(request.query.get('days') ?? 14)
+      // La Marzocco rejects silly windows; keep it to something sane.
+      const days = Number.isFinite(requested) ? Math.min(Math.max(Math.trunc(requested), 1), 90) : 14
+
+      return { jsonBody: { days, shots: await getRecentShots(getUserId(request), days) } }
     } catch (error) {
       return errorResponse(error)
     }
