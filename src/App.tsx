@@ -17,9 +17,11 @@ import { AuthDialog } from '@/components/AuthDialog'
 import { UserHeader } from '@/components/UserHeader'
 import { LevelBadge } from '@/components/LevelBadge'
 import { AchievementsRow } from '@/components/AchievementsRow'
+import { MachineShotsDialog } from '@/components/MachineShotsDialog'
+import { useMachine } from '@/hooks/useMachine'
 import grinderLogo from '@/assets/minimalist_espresso_grinder.svg'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
-import { Coffee, Funnel, Plus, SortAscending, Faders, ChartLineUp, Palette, ArrowsClockwise } from '@phosphor-icons/react'
+import { Coffee, Funnel, Plus, SortAscending, Faders, ChartLineUp, Palette, ArrowsClockwise, ClockCounterClockwise } from '@phosphor-icons/react'
 import { ulid } from 'ulid'
 import { toast } from 'sonner'
 import {
@@ -179,6 +181,14 @@ function AuthenticatedApp({
     `${userKey}:tasting-profiles`,
     []
   )
+  // Shot times already pulled in from the machine, so they aren't offered twice.
+  const [importedShotTimes, setImportedShotTimes, importedShotTimesLoading] = useKV<number[]>(
+    `${userKey}:imported-shot-times`,
+    []
+  )
+  const [machineShotsOpen, setMachineShotsOpen] = useState(false)
+  const { available: machineAvailable } = useMachine()
+
   const [grinders, setGrinders] = useKV<Grinder[]>(
     `${userKey}:grinders`,
     []
@@ -320,6 +330,13 @@ function AuthenticatedApp({
     setExtractionDialogOpen(true)
   }
 
+  // Imported brews keep the machine's own timestamp rather than "now", so the
+  // log reflects when the shot was actually pulled.
+  const handleImportShot = (shotTime: number, extraction: Omit<Extraction, 'id'>) => {
+    setExtractions((current) => [...(current || []), { ...extraction, id: ulid() }])
+    setImportedShotTimes((current) => [...(current || []), shotTime])
+  }
+
   const handleSaveExtraction = (extractionData: Omit<Extraction, 'id' | 'timestamp'>) => {
     const newExtraction: Extraction = {
       ...extractionData,
@@ -424,6 +441,17 @@ function AuthenticatedApp({
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {machineAvailable && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setMachineShotsOpen(true)}
+                  aria-label="Brews from your machine"
+                  title="Brews from your machine"
+                >
+                  <ClockCounterClockwise size={20} weight="bold" />
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="icon"
@@ -649,6 +677,15 @@ function AuthenticatedApp({
         grinders={grinders || []}
         onSave={handleSaveExtraction}
         onAddGrinder={() => setGrinderDialogOpen(true)}
+      />
+
+      <MachineShotsDialog
+        open={machineShotsOpen}
+        onOpenChange={setMachineShotsOpen}
+        beans={(beans || []).filter((b) => !b.archived)}
+        importedTimes={importedShotTimes || []}
+        importedTimesLoading={importedShotTimesLoading}
+        onImport={handleImportShot}
       />
 
       <GrinderDialog

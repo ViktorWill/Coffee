@@ -183,6 +183,56 @@ export async function getMachineStatus(userId: string, includeRaw = false): Prom
   return normalizeDashboard(dashboard, includeRaw)
 }
 
+export interface MachineShot {
+  /** Epoch milliseconds, used as the stable identity of a shot. */
+  time: number
+  timeSeconds: number
+  targetTemperature: number | null
+  /** Yield in grams, or null when no brew-by-weight scale is paired. */
+  outputGrams: number | null
+  valid: boolean
+  invalidReason: string | null
+}
+
+/** Plausible recent shots so the import flow can be exercised without hardware. */
+function mockShots(): MachineShot[] {
+  const now = Date.now()
+  const hour = 60 * 60 * 1000
+  return [
+    { time: now - 2 * hour, timeSeconds: 27.2, targetTemperature: 93, outputGrams: null, valid: true, invalidReason: null },
+    { time: now - 26 * hour, timeSeconds: 22.2, targetTemperature: 93, outputGrams: null, valid: true, invalidReason: null },
+    { time: now - 30 * hour, timeSeconds: 8.4, targetTemperature: 93, outputGrams: null, valid: false, invalidReason: 'Aborted' },
+    { time: now - 50 * hour, timeSeconds: 28.4, targetTemperature: 93, outputGrams: null, valid: true, invalidReason: null },
+  ]
+}
+
+/**
+ * Recent shots pulled on the machine, newest first.
+ *
+ * Note these are brews the machine recorded, not Bean Sheet extractions — they
+ * carry no bean, grind or yield. Attaching them to a bean is the user's call.
+ */
+export async function getRecentShots(userId: string, days = 14): Promise<MachineShot[]> {
+  if (isMockMode()) return mockShots()
+
+  const conn = await connect(userId)
+  if (!conn) return []
+
+  const raw = await conn.client.getLastCoffee(conn.serialNumber, days)
+
+  return raw
+    .filter((s) => typeof s.time === 'number')
+    .map((s) => ({
+      time: s.time,
+      timeSeconds: Math.round((s.extractionSeconds ?? 0) * 10) / 10,
+      targetTemperature: typeof s.targetTemperature === 'number' ? s.targetTemperature : null,
+      outputGrams: typeof s.doseValue === 'number' ? s.doseValue : null,
+      valid: s.valid !== false,
+      invalidReason: s.invalidReason ?? null,
+    }))
+    .sort((a, b) => b.time - a.time)
+}
+
 export async function setMachinePower(userId: string, enabled: boolean): Promise<CommandAccepted> {
   if (isMockMode()) {
     mockState.powered = enabled
