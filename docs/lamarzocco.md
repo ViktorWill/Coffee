@@ -5,12 +5,26 @@ set the coffee boiler target temperature per bean.
 
 ## Status
 
-Verified against the live API: installation-key registration, sign-in, and
-request signing all work. **Not yet verified against real hardware** — the
-machine was not on the account when this was built, so the dashboard widget
-parsing in `service.ts` (`normalizeDashboard`) is a best-effort read of
-pylamarzocco's models and needs checking on day one. Use `GET /api/machine?raw=1`
-to dump the unparsed dashboard and compare.
+**Verified end to end against a real Linea Mini R** (2026-10-05): registration,
+sign-in, request signing, dashboard parsing, and the temperature write path
+(93 → 94 → 93, confirmed on the machine).
+
+What real hardware taught us, beyond what mocks could:
+
+- **Commands take ~4–6 seconds to apply.** The REST call only queues them. The
+  UI polls until the machine reports the change rather than re-reading once;
+  a single short delay reports stale state and looks like the command was ignored.
+- **The boiler's real range is 80–100 °C**, wider than the 85–96 fallback. Always
+  prefer the machine's own `targetTemperatureMin/Max`.
+- **There is no live boiler temperature.** `CMCoffeeBoiler` exposes the setpoint
+  and a coarse `status` (`Ready`/`HeatingUp`/…), so `currentTemperature` is
+  always null on this model.
+- **Shot history is unavailable on this machine**: `shotCounterSupported: false`
+  and `lastCoffee: null`, which rules out auto-populating extractions from the
+  machine despite the gateway having a shot timer.
+
+`GET /api/machine?raw=1` still dumps the unparsed dashboard if the shape ever
+needs re-checking.
 
 ## How it works
 

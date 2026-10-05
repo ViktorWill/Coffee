@@ -12,6 +12,11 @@ import { credentialStore, isMockMode } from './config.js'
 
 export interface CoffeeBoilerState {
   targetTemperature: number | null
+  /**
+   * Live boiler temperature. Always null on a Linea Mini R — the dashboard
+   * exposes only the setpoint and a coarse `status`. Kept because the field may
+   * be populated on other models or over the websocket feed we don't subscribe to.
+   */
   currentTemperature: number | null
   /** BoilerStatus: StandBy | HeatingUp | Ready | NoWater | Off */
   status: string | null

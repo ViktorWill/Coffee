@@ -24,10 +24,19 @@ export function MachineDialIn({ bean }: MachineDialInProps) {
   const handleDialIn = async () => {
     try {
       if (!status.powered) await setPower(true)
-      await setTemperature(bean.brewTempC!)
-      toast.success(`Machine set to ${bean.brewTempC}°C for ${bean.name}`, {
-        description: 'La Marzocco accepted the command — give the boiler a moment to settle.',
-      })
+      const confirmed = await setTemperature(bean.brewTempC!)
+
+      if (confirmed) {
+        toast.success(`Machine set to ${bean.brewTempC}°C for ${bean.name}`, {
+          description: 'The boiler will take a few minutes to reach temperature.',
+        })
+      } else {
+        // Accepted by the cloud but not observed on the machine within the
+        // polling window — it may still land, so don't claim failure.
+        toast.warning('Command sent, but not confirmed', {
+          description: 'The machine has not reported the new temperature yet. Check the La Marzocco app.',
+        })
+      }
     } catch (error) {
       toast.error('Could not reach the machine', {
         description: error instanceof Error ? error.message : undefined,
@@ -68,7 +77,7 @@ export function MachineDialIn({ bean }: MachineDialInProps) {
         >
           {status.powered ? <Thermometer size={14} weight="fill" /> : <Power size={14} weight="fill" />}
           {isBusy
-            ? 'Sending…'
+            ? 'Applying…'
             : status.powered
               ? `Set to ${bean.brewTempC}°C`
               : `Warm up to ${bean.brewTempC}°C`}
