@@ -187,7 +187,7 @@ function AuthenticatedApp({
     []
   )
   const [machineShotsOpen, setMachineShotsOpen] = useState(false)
-  const { available: machineAvailable } = useMachine()
+  const { available: machineAvailable, error: machineError } = useMachine()
 
   const [grinders, setGrinders] = useKV<Grinder[]>(
     `${userKey}:grinders`,
@@ -441,13 +441,13 @@ function AuthenticatedApp({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {machineAvailable && (
+              {(machineAvailable || machineError) && (
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setMachineShotsOpen(true)}
-                  aria-label="Brews from your machine"
-                  title="Brews from your machine"
+                  aria-label={machineError ? 'Machine unavailable' : 'Brews from your machine'}
+                  title={machineError || 'Brews from your machine'}
                 >
                   <ClockCounterClockwise size={20} weight="bold" />
                 </Button>

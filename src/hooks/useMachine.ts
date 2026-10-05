@@ -39,14 +39,38 @@ export function useMachine() {
   const [status, setStatus] = useState<MachineStatus | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isBusy, setIsBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  /** Returns null when unreachable or not configured (the API answers 503). */
+  /**
+   * Returns null when there is no usable status.
+   *
+   * "Not configured" (503) and "configured but broken" are deliberately
+   * distinguished: the first is a normal state where the controls simply don't
+   * belong, the second is a fault the user needs told about. Collapsing them
+   * means a misconfigured integration disappears silently, which is exactly how
+   * a malformed LM_INSTALLATION_KEY once went unnoticed until someone opened
+   * /api/machine by hand.
+   */
   const fetchStatus = useCallback(async (): Promise<MachineStatus | null> => {
     try {
       const res = await fetch('/api/machine')
-      if (!res.ok) return null
-      return (await res.json()) as MachineStatus
+
+      if (res.ok) {
+        setError(null)
+        return (await res.json()) as MachineStatus
+      }
+
+      if (res.status === 503) {
+        // Genuinely not set up — not an error worth showing.
+        setError(null)
+        return null
+      }
+
+      const data = (await res.json().catch(() => ({}))) as { error?: string }
+      setError(data.error || `The machine could not be reached (${res.status}).`)
+      return null
     } catch {
+      setError('The machine could not be reached.')
       return null
     }
   }, [])
@@ -122,6 +146,8 @@ export function useMachine() {
     status,
     isLoading,
     isBusy,
+    /** Set when the integration is configured but failing, so it can be surfaced. */
+    error,
     available: Boolean(status?.configured),
     refresh,
     setTemperature,
