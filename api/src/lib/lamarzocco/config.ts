@@ -35,14 +35,22 @@ export interface CredentialStore {
  * LM_INSTALLATION_KEY holds the JSON produced by scripts/lm-register.mjs. It is
  * generated and registered once — regenerating it on every cold start would
  * register a new client against the account each time.
+ *
+ * Access is restricted to LM_OWNER_USER_ID. This matters: Static Web Apps grants
+ * the built-in `authenticated` role to anyone who signs in with any configured
+ * provider, so without this check every GitHub user on the internet could switch
+ * on the owner's espresso machine. Fails closed — no owner configured means no
+ * credentials, so a forgotten setting disables the feature rather than exposing it.
  */
 export class EnvCredentialStore implements CredentialStore {
-  async getCredentials(_userId: string): Promise<LaMarzoccoCredentials | null> {
+  async getCredentials(userId: string): Promise<LaMarzoccoCredentials | null> {
     const username = process.env.LM_USERNAME
     const password = process.env.LM_PASSWORD
     const rawKey = process.env.LM_INSTALLATION_KEY
+    const ownerUserId = process.env.LM_OWNER_USER_ID
 
     if (!username || !password || !rawKey) return null
+    if (!ownerUserId || userId !== ownerUserId) return null
 
     let parsed: SerializedInstallationKey
     try {

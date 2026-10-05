@@ -61,8 +61,22 @@ Then set on the Static Web App (or `api/local.settings.json` for local dev):
 | `LM_USERNAME` | La Marzocco Home login |
 | `LM_PASSWORD` | La Marzocco Home password |
 | `LM_INSTALLATION_KEY` | JSON printed by `lm:register` — contains a private key |
+| `LM_OWNER_USER_ID` | **Required.** SWA principal id allowed to control the machine |
 | `LM_SERIAL` | Optional; only needed with multiple machines |
 | `LM_MOCK` | `1` to use the built-in mock instead of real hardware |
+
+### Why `LM_OWNER_USER_ID` is required
+
+`staticwebapp.config.json` protects `/api/*` with the built-in `authenticated`
+role, which Static Web Apps grants to **anyone** who signs in with any configured
+provider — not just you. Without an owner check, any GitHub user who found the URL
+could switch on the machine and change its boiler temperature.
+
+Credential lookup therefore fails closed: no `LM_OWNER_USER_ID`, no credentials,
+and the UI simply hides the controls. Find your id by signing in and visiting
+`/.auth/me` — it's the `userId` in `clientPrincipal`, and it differs per provider,
+so use the one you actually sign in with. Set `LM_OWNER_USER_ID=local-dev` in
+`api/local.settings.json` for local development.
 
 Credentials are read via `config.ts` and never written to Cosmos — they unlock a
 heating appliance, and the KV store is user-writable data.
