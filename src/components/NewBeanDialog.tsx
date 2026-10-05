@@ -319,6 +319,28 @@ Important: Return ONLY the JSON object, no other text.`
               </SelectContent>
             </Select>
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="brewTemp">Brew Temperature (Optional)</Label>
+            <Input
+              id="brewTemp"
+              type="number"
+              inputMode="decimal"
+              min={85}
+              max={96}
+              step={0.5}
+              value={brewTempC ?? ''}
+              onChange={(e) => {
+                const v = e.target.value
+                setBrewTempC(v === '' ? undefined : Number(v))
+              }}
+              placeholder="e.g. 93.5"
+              disabled={isAnalyzing}
+            />
+            <p className="text-xs text-muted-foreground">
+              Used by the “Dial in machine” control to set your espresso machine's boiler.
+            </p>
+          </div>
         </div>
 
         <div className="flex gap-2">
