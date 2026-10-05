@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Toaster } from '@/components/ui/sonner'
 import { CoffeeBean, Extraction, CoffeeType, TastingProfile, Grinder } from '@/lib/types'
+import { createBeanPhotoCodec } from '@/lib/beanPhotoStorage'
 import { COFFEE_ORIGINS, ROAST_LEVELS } from '@/lib/constants'
 import { BeanCard } from '@/components/BeanCard'
 import { NewBeanDialog } from '@/components/NewBeanDialog'
@@ -163,9 +164,12 @@ function AuthenticatedApp({
   setGrinderDialogOpen,
 }: AuthenticatedAppProps) {
   const userKey = encodeURIComponent(currentUserId)
+  const beansKey = `${userKey}:coffee-beans`
+  const beanPhotoCodec = useMemo(() => createBeanPhotoCodec(beansKey), [beansKey])
   const [beans, setBeans] = useKV<CoffeeBean[]>(
-    `${userKey}:coffee-beans`,
-    []
+    beansKey,
+    [],
+    beanPhotoCodec
   )
   const [extractions, setExtractions] = useKV<Extraction[]>(
     `${userKey}:extractions`,
@@ -382,6 +386,7 @@ function AuthenticatedApp({
     setBeans((currentBeans) =>
       (currentBeans || []).filter((bean) => bean.id !== beanToDelete.id)
     )
+    void beanPhotoCodec.deletePhoto(beanToDelete.id)
     
     setExtractions((currentExtractions) =>
       (currentExtractions || []).filter((extraction) => extraction.beanId !== beanToDelete.id)
