@@ -5,7 +5,9 @@
   "main": "dist/functions/*.js",
   "scripts": {
     "build": "tsc",
-    "start": "func start"
+    "start": "func start",
+    "verify:auth": "node scripts/verify-auth.mjs",
+    "lm:register": "node scripts/lm-register.mjs"
   },
   "dependencies": {
     "@azure/cosmos": "^4.2.0",

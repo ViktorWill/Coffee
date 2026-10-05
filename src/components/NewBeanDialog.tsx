@@ -29,6 +29,7 @@ export function NewBeanDialog({ open, onOpenChange, coffeeType, onSave }: NewBea
   const [roastLevel, setRoastLevel] = useState('')
   const [aiPredictedTaste, setAiPredictedTaste] = useState('')
   const [aiBrewSuggestion, setAiBrewSuggestion] = useState('')
+  const [brewTempC, setBrewTempC] = useState<number | undefined>(undefined)
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -60,11 +61,12 @@ export function NewBeanDialog({ open, onOpenChange, coffeeType, onSave }: NewBea
 Then, using what's on the package plus your general knowledge of that origin/altitude/roast combination, add:
 - predictedTaste: a short paragraph (2-3 sentences) predicting the likely flavor, acidity, body and mouthfeel of this coffee
 - brewSuggestion: a short paragraph (2-3 sentences) with a concrete starting-point brew recipe for ${coffeeType === 'espresso' ? 'espresso' : 'filter/pour-over'}, tuned to the roast level and origin (e.g. lighter/higher-altitude beans often want a finer grind and hotter water, darker roasts often want coarser grind and slightly cooler water)
+- brewTempC: a NUMBER (not a string) between 85 and 96 — the single recommended brew water temperature in Celsius that matches your brewSuggestion. This is applied directly to an espresso machine's boiler, so give one specific value, not a range.
 
-Return ONLY a JSON object with these exact keys: "name", "blend", "tasteNotes", "origin", "altitude", "roastLevel", "predictedTaste", "brewSuggestion". If you cannot find label information, use empty strings, but always attempt predictedTaste and brewSuggestion from what you can infer.
+Return ONLY a JSON object with these exact keys: "name", "blend", "tasteNotes", "origin", "altitude", "roastLevel", "predictedTaste", "brewSuggestion", "brewTempC". If you cannot find label information, use empty strings, but always attempt predictedTaste, brewSuggestion and brewTempC from what you can infer.
 
 Example response format:
-{"name": "Blue Bottle Giant Steps", "blend": "Single Origin Ethiopia", "tasteNotes": "Blueberry, chocolate, floral notes", "origin": "Ethiopia Yirgacheffe", "altitude": "1800-2200 masl", "roastLevel": "Light", "predictedTaste": "Expect bright, juicy acidity with blueberry and floral notes up front, a light body, and a clean, tea-like finish typical of washed Yirgacheffe.", "brewSuggestion": "Start with a fine-medium grind, water just off the boil (~96°C), and a 1:2.2 ratio over 27-30 seconds to bring out the fruit without tipping sour."}
+{"name": "Blue Bottle Giant Steps", "blend": "Single Origin Ethiopia", "tasteNotes": "Blueberry, chocolate, floral notes", "origin": "Ethiopia Yirgacheffe", "altitude": "1800-2200 masl", "roastLevel": "Light", "predictedTaste": "Expect bright, juicy acidity with blueberry and floral notes up front, a light body, and a clean, tea-like finish typical of washed Yirgacheffe.", "brewSuggestion": "Start with a fine-medium grind, water just off the boil (~96°C), and a 1:2.2 ratio over 27-30 seconds to bring out the fruit without tipping sour.", "brewTempC": 95.5}
 
 Important: Return ONLY the JSON object, no other text.`
 
@@ -78,6 +80,7 @@ Important: Return ONLY the JSON object, no other text.`
           roastLevel?: string
           predictedTaste?: string
           brewSuggestion?: string
+          brewTempC?: number | string
         }>(result)
 
         const compressedImage = await compressImage(base64Image)
@@ -91,6 +94,9 @@ Important: Return ONLY the JSON object, no other text.`
         if (parsed.roastLevel) setRoastLevel(parsed.roastLevel)
         if (parsed.predictedTaste) setAiPredictedTaste(parsed.predictedTaste)
         if (parsed.brewSuggestion) setAiBrewSuggestion(parsed.brewSuggestion)
+        // The model occasionally returns this as a string despite the instruction.
+        const temp = Number(parsed.brewTempC)
+        if (Number.isFinite(temp) && temp >= 85 && temp <= 96) setBrewTempC(temp)
 
         toast.success('Coffee info extracted successfully!')
       } catch (error) {
@@ -125,6 +131,7 @@ Important: Return ONLY the JSON object, no other text.`
       roastLevel: roastLevel.trim() || undefined,
       aiPredictedTaste: aiPredictedTaste.trim() || undefined,
       aiBrewSuggestion: aiBrewSuggestion.trim() || undefined,
+      brewTempC,
     })
 
     setPhotoUrl('')
@@ -136,6 +143,7 @@ Important: Return ONLY the JSON object, no other text.`
     setRoastLevel('')
     setAiPredictedTaste('')
     setAiBrewSuggestion('')
+    setBrewTempC(undefined)
     onOpenChange(false)
   }
 
@@ -171,6 +179,7 @@ Important: Return ONLY the JSON object, no other text.`
                       setRoastLevel('')
                       setAiPredictedTaste('')
                       setAiBrewSuggestion('')
+                      setBrewTempC(undefined)
                     }}
                   >
                     Remove Photo
