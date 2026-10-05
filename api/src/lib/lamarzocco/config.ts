@@ -41,16 +41,25 @@ export interface CredentialStore {
  * provider, so without this check every GitHub user on the internet could switch
  * on the owner's espresso machine. Fails closed — no owner configured means no
  * credentials, so a forgotten setting disables the feature rather than exposing it.
+ *
+ * Accepts a comma-separated list, because Static Web Apps issues a *different*
+ * userId per login provider. Pinning a single id means signing in with Microsoft
+ * rather than GitHub silently yields no controls and no explanation, so list every
+ * id you sign in with.
  */
 export class EnvCredentialStore implements CredentialStore {
   async getCredentials(userId: string): Promise<LaMarzoccoCredentials | null> {
     const username = process.env.LM_USERNAME
     const password = process.env.LM_PASSWORD
     const rawKey = process.env.LM_INSTALLATION_KEY
-    const ownerUserId = process.env.LM_OWNER_USER_ID
+
+    const owners = (process.env.LM_OWNER_USER_ID ?? '')
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean)
 
     if (!username || !password || !rawKey) return null
-    if (!ownerUserId || userId !== ownerUserId) return null
+    if (owners.length === 0 || !owners.includes(userId)) return null
 
     let parsed: SerializedInstallationKey
     try {
